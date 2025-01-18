@@ -1,0 +1,147 @@
+components:
+  schemas:
+    login:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          description: The email of the user
+        password:
+          type: string
+          description: The password of the user
+      example:
+        email: "email@me.com"
+        password: "SecurePass123!"
+
+tags:
+  - name: authentication
+    description: Authentication operations
+
+paths:
+  /api/v1/auth/login:
+    post:
+      summary: User login
+      tags: [authentication]
+      description: Authenticate a user and return an access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/loginRequest"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/loginResponse"
+        "400":
+          description: Bad request, missing email or password
+        "401":
+          description: Unauthorized, incorrect email or password
+        "404":
+          description: User not found
+        "500":
+          description: Internal server error
+
+  /api/v1/auth/change-password:
+    post:
+      summary: Change user password
+      tags: [authentication]
+      description: Change the password for an authenticated user
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/changePasswordRequest"
+      responses:
+        "200":
+          description: Password changed successfully
+        "400":
+          description: Bad request, missing required fields
+        "401":
+          description: Unauthorized, incorrect existing password
+        "500":
+          description: Internal server error
+
+  /api/v1/auth/forgot-password:
+    post:
+      summary: Forgot password
+      tags: [authentication]
+      description: Request a password reset OTP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/forgotPasswordRequest"
+      responses:
+        "200":
+          description: OTP sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  OTP:
+                    type: string
+        "404":
+          description: User not found
+        "500":
+          description: Internal server error
+
+  /api/v1/auth/reset-password:
+    post:
+      summary: Reset password
+      tags: [authentication]
+      description: Reset user password using OTP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/resetPasswordRequest"
+      responses:
+        "200":
+          description: Password reset successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  access_token:
+                    type: string
+        "400":
+          description: Bad request, missing required fields
+        "401":
+          description: Unauthorized, incorrect or expired OTP
+        "404":
+          description: User not found
+        "500":
+          description: Internal server error
+
+  /api/v1/auth/logout:
+    post:
+      summary: User logout
+      tags: [authentication]
+      description: Log out the currently authenticated user
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Logout successful
+        "401":
+          description: Unauthorized, user not logged in
+        "500":
+          description: Internal server error

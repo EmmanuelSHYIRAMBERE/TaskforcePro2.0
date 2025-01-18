@@ -1,0 +1,166 @@
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    user:
+      type: object
+      required:
+        - name
+        - email
+        - phone
+        - password
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        password:
+          type: string
+      example:
+        name: "John Doe"
+        email: "john@example.com"
+        phone: "123-456-7890"
+        password: "SecurePass123!"
+
+tags:tags:
+  - name: userManagement
+    description: The user managing API
+
+paths:
+  /api/v1/user:
+    post:
+      summary: Register a new user
+      tags: [userManagement]
+      description: Endpoint to register a new user to the system
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/user"
+      responses:
+        "200":
+          description: User added successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/user"
+        "401":
+          description: Unauthorized, authentication error
+        "500":
+          description: Internal server error
+
+    get:
+      summary: Get all users
+      tags: [userManagement]
+      description: Retrieve all users from the system
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Successfully retrieved all users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/user"
+        "401":
+          description: Unauthorized, authentication error
+        "500":
+          description: Internal server error
+
+  /api/v1/user/{id}:
+    get:
+      summary: Get a user by ID
+      tags: [userManagement]
+      description: Retrieve a specific user by their ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The ID of the user
+      responses:
+        "200":
+          description: Successfully retrieved the user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/user"
+        "401":
+          description: Unauthorized, authentication error
+        "404":
+          description: User not found
+        "500":
+          description: Internal server error
+
+    put:
+      summary: Update a user
+      tags: [userManagement]
+      description: Update a specific user by their ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The ID of the user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/user"
+      responses:
+        "200":
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/user"
+        "400":
+          description: Bad request, validation error
+        "401":
+          description: Unauthorized, authentication error
+        "404":
+          description: User not found
+        "500":
+          description: Internal server error
+
+    delete:
+      summary: Delete a user
+      tags: [userManagement]
+      description: Delete a specific user by their ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The ID of the user
+      responses:
+        "200":
+          description: User deleted successfully
+        "401":
+          description: Unauthorized, authentication error
+        "404":
+          description: User not found
+        "500":
+          description: Internal server error
