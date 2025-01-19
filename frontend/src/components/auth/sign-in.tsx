@@ -4,13 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import usePost from "@/hooks/use-post";
-import { Link } from "react-router-dom"; // Import Link for navigation
+import { Link } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 export const SignIn = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState(""); // Error state
 
   const { add, isAdding } = usePost("/api/v1/auth/login");
 
@@ -18,14 +19,23 @@ export const SignIn = () => {
     e.preventDefault();
     try {
       const response = await add({ email, password });
-      // Assuming the response contains the token
-      if (response && response.token) {
-        localStorage.setItem("token", response.token);
-        navigate("/dashboard"); // Redirect to dashboard after successful login
+
+      console.log("response sign in", response);
+
+      if (response && response.access_token) {
+        localStorage.setItem("token", response.access_token);
+        toast({
+          title: "Success",
+          description: "Successfully signed in! Redirecting...",
+        });
+        navigate("/dashboard");
       }
     } catch (error) {
-      console.log("Error signing in:", error);
-      setErrorMessage("Invalid email or password"); // Display error message
+      console.log("error signing in", error);
+      toast({
+        title: "Error",
+        description: "Invalid email or password. Please try again.",
+      });
     }
   };
 
@@ -55,8 +65,6 @@ export const SignIn = () => {
                 required
               />
             </div>
-            {errorMessage && <div className="text-red-500">{errorMessage}</div>}{" "}
-            {/* Show error message */}
             <Button type="submit" className="w-full" disabled={isAdding}>
               {isAdding ? "Signing In..." : "Sign In"}
             </Button>

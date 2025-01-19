@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Toaster } from "@/components/ui/toaster";
+
 import { MainLayout } from "./components/layout/main-layout";
 import { PrivateRoute } from "./components/auth/private-route";
 import { Dashboard } from "./pages/dashboard";
@@ -14,6 +16,7 @@ import { Settings } from "./pages/settings";
 function App() {
   return (
     <BrowserRouter>
+      <Toaster />
       <Routes>
         {/* Auth Routes */}
         <Route path="/signin" element={<SignIn />} />
