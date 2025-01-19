@@ -6,7 +6,7 @@
     "server": "nodemon",
     "start": "node dist/server.js",
     "build": "tsc && npm run copy-files",
-    "copy-files": "copyfiles -u 1 src/**/*.yaml dist/"
+    "copy-files": "npx copyfiles -u 1 src/**/*.yaml dist/"
   },
   "keywords": [],
   "author": "",
