@@ -60,8 +60,8 @@ class TransactionService {
             }
         });
     }
-    static getTransactions(userId, filters = {}) {
-        return __awaiter(this, void 0, void 0, function* () {
+    static getTransactions(userId_1) {
+        return __awaiter(this, arguments, void 0, function* (userId, filters = {}) {
             const query = Object.assign({ user: userId }, filters);
             return transaction_model_1.Transaction.find(query)
                 .populate("account")

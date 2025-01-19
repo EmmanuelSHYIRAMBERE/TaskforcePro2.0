@@ -16,8 +16,8 @@ const budget_model_1 = require("../models/budget.model");
 class TransactionController {
     // Create new transaction
     static create(req, res) {
-        var _a;
         return __awaiter(this, void 0, void 0, function* () {
+            var _a;
             try {
                 const { accountId, categoryId, amount, type, description } = req.body;
                 const userId = req.user._id;

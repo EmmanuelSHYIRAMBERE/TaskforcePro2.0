@@ -8,13 +8,17 @@ const http_1 = require("http");
 const cors_1 = __importDefault(require("cors"));
 const body_parser_1 = __importDefault(require("body-parser"));
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
-const yamljs_1 = __importDefault(require("yamljs"));
+const swagger_jsdoc_1 = __importDefault(require("swagger-jsdoc"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
+const js_yaml_1 = __importDefault(require("js-yaml"));
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
 const db_config_1 = __importDefault(require("./config/db.config"));
 const routes_1 = __importDefault(require("./routes"));
 const logger_utils_1 = __importDefault(require("./utils/logger.utils"));
+global.__basedir = __dirname;
+const swaggerLetterHead = js_yaml_1.default.load(fs_1.default.readFileSync(path_1.default.join(__dirname, "config", "swagger.yaml"), "utf-8"));
 // expose static files
-const swaggerDocument = yamljs_1.default.load("./src/config/swagger.yaml");
 function configureApp() {
     const app = (0, express_1.default)();
     app.use(body_parser_1.default.json());
@@ -34,6 +38,26 @@ function configureApp() {
     }`);
         next();
     });
+    const options = {
+        swaggerDefinition: {
+            openapi: "3.0.0",
+            info: swaggerLetterHead.info,
+            servers: [
+                {
+                    url: "http://localhost:8000",
+                    description: "Localhost",
+                },
+            ],
+        },
+        apis: [
+            "./config/*.js",
+            "./config/*.yaml",
+            "./docs/*.js",
+            "./docs/*.yaml",
+            "./routes/*.js",
+        ],
+    };
+    const swaggerDocument = (0, swagger_jsdoc_1.default)(options);
     // serve and swagger documentation
     app.use("/api-docs", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swaggerDocument));
     app.use("/api/v1", routes_1.default);

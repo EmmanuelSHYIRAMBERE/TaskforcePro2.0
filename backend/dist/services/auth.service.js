@@ -15,8 +15,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const crypto_1 = __importDefault(require("crypto"));
 const user_model_ts_1 = require("../models/user.model.ts");
 const errorhandler_utils_1 = __importDefault(require("../utils/errorhandler.utils"));
-const password_utils_js_1 = require("../utils/password.utils.js");
-const token_utils_js_1 = require("../utils/token.utils.js");
+const password_utils_1 = require("../utils/password.utils");
+const token_utils_1 = require("../utils/token.utils");
 class AuthService {
     generateOTP(expiryMinutes = 10) {
         const otp = crypto_1.default.randomInt(100000, 999999);
@@ -33,7 +33,7 @@ class AuthService {
             if (!user) {
                 throw new errorhandler_utils_1.default({ message: `User not found`, statusCode: 404 });
             }
-            let isPwdMatch = yield (0, password_utils_js_1.comparePassword)(password, user.password);
+            let isPwdMatch = yield (0, password_utils_1.comparePassword)(password, user.password);
             if (!isPwdMatch) {
                 throw new errorhandler_utils_1.default({
                     message: `Incorrect password. Please try again.`,
@@ -41,8 +41,8 @@ class AuthService {
                 });
             }
             const { _id, name, phone, role } = user;
-            const accessToken = (0, token_utils_js_1.generateAccessToken)({ _id, email });
-            const refreshToken = (0, token_utils_js_1.generateRefreshToken)({ _id, email });
+            const accessToken = (0, token_utils_1.generateAccessToken)({ _id, email });
+            const refreshToken = (0, token_utils_1.generateRefreshToken)({ _id, email });
             return {
                 accessToken,
                 refreshToken,
@@ -59,14 +59,14 @@ class AuthService {
                     statusCode: 400,
                 });
             }
-            let pwdCheck = yield (0, password_utils_js_1.comparePassword)(existingPassword, user.password);
+            let pwdCheck = yield (0, password_utils_1.comparePassword)(existingPassword, user.password);
             if (!pwdCheck) {
                 throw new errorhandler_utils_1.default({
                     message: "Incorrect password. Please try again.",
                     statusCode: 401,
                 });
             }
-            let hashedPwd = yield (0, password_utils_js_1.hashPassword)(newPassword);
+            let hashedPwd = yield (0, password_utils_1.hashPassword)(newPassword);
             user.password = hashedPwd;
             yield user.save();
         });
@@ -110,12 +110,12 @@ class AuthService {
                     statusCode: 401,
                 });
             }
-            let hashedPwd = yield (0, password_utils_js_1.hashPassword)(newPassword);
+            let hashedPwd = yield (0, password_utils_1.hashPassword)(newPassword);
             user.password = hashedPwd;
             user.otp = null;
             user.otpexpire = null;
             yield user.save();
-            return (0, token_utils_js_1.generateAccessToken)({ _id: user._id, email: user.email });
+            return (0, token_utils_1.generateAccessToken)({ _id: user._id, email: user.email });
         });
     }
     logout(req, res) {
