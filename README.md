@@ -1,4 +1,4 @@
-# TaskforcePro2.0 - Personal Wallet Management System
+# TaskforcePro2.0 - Wallet Web Application
 
 <a name="readme-top"></a>
 
@@ -27,7 +27,7 @@
 
 ## About The Project
 
-TaskforcePro2.0 is a comprehensive wallet management system designed to help users track and manage their finances across multiple accounts. The application provides features for transaction tracking, budget management, expense categorization, and financial reporting.
+`Wallet Web Application` is a comprehensive wallet management system designed to help users track and manage their finances across multiple accounts. The application provides features for transaction tracking, budget management, expense categorization, and financial reporting.
 
 ### Key Features
 
