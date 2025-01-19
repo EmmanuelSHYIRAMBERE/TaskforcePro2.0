@@ -9,8 +9,6 @@ import {
   FileText,
   Settings,
   HelpCircle,
-  UserCircle,
-  BellRing,
   Target,
   CreditCard,
 } from "lucide-react";

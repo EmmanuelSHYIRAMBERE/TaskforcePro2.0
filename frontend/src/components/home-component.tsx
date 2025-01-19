@@ -1,4 +1,3 @@
-import React from "react";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,13 +10,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import {
-  PlusCircle,
-  Wallet,
-  ArrowUpRight,
-  ArrowDownRight,
-  Bell,
-} from "lucide-react";
+import { PlusCircle, Wallet, ArrowUpRight, ArrowDownRight } from "lucide-react";
 
 const HomeComponent = () => {
   const [totalBalance, setTotalBalance] = useState(5000);

@@ -1,19 +1,20 @@
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
-  TableHeader,
   TableRow,
 } from "@/components/ui/table";
 
 interface TableProps {
   headers: string[];
-  data: Record<string, any>[];
+  data: Record<string, string | number | boolean>[];
 }
 
-const AppTable: React.FC<TableProps> = ({ headers, data }) => {
+const AppTable: React.FC<TableProps> = ({
+  headers,
+  data,
+}): React.ReactElement => {
   return (
     <Table>
       <TableHead>
