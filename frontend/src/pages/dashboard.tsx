@@ -16,7 +16,7 @@ import { DataTable } from "@/components/ui/data-table";
 export function Dashboard() {
   const [accounts] = useState<Account[]>([]);
   const [recentTransactions] = useState<Transaction[]>([]);
-  const [spendingData] = useState<any[]>([]);
+  const [spendingData] = useState<{ date: string; amount: number }[]>([]);
 
   // Fetch data effects would go here
 
@@ -24,7 +24,11 @@ export function Dashboard() {
     {
       accessorKey: "date",
       header: "Date",
-      cell: ({ row }: { row: { getValue: (key: string) => any } }) => {
+      cell: ({
+        row,
+      }: {
+        row: { getValue: (key: string) => string | number };
+      }) => {
         return new Date(row.getValue("date")).toLocaleDateString();
       },
     },
@@ -35,7 +39,7 @@ export function Dashboard() {
     {
       accessorKey: "amount",
       header: "Amount",
-      cell: ({ row }: { row: { getValue: (key: string) => any } }) => {
+      cell: ({ row }: { row: { getValue: (key: string) => string } }) => {
         const amount = parseFloat(row.getValue("amount"));
         const formatted = new Intl.NumberFormat("en-US", {
           style: "currency",

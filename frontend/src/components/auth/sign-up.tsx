@@ -1,23 +1,46 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import usePost from "@/hooks/use-post"; // Custom hook for POST requests
 
 export const SignUp = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
     password: "",
-    confirmPassword: "",
   });
+  const [errorMessage, setErrorMessage] = useState(""); // Error state
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const { add, isAdding, data, error } = usePost("/api/v1/user");
+
+  console.log("data", data);
+  console.log("error", error);
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Add your registration logic here
-    console.log("Sign up:", formData);
-    navigate("/signin");
+
+    // Validate password confirmation if needed
+    if (
+      !formData.name ||
+      !formData.email ||
+      !formData.phone ||
+      !formData.password
+    ) {
+      setErrorMessage("All fields are required");
+      return;
+    }
+
+    try {
+      // Call your API to register the user
+      await add(formData);
+      navigate("/signin"); // Redirect to the sign-in page after successful registration
+    } catch (error) {
+      console.log("Error signing up:", error);
+      setErrorMessage("Failed to register, please try again.");
+    }
   };
 
   return (
@@ -51,6 +74,17 @@ export const SignUp = () => {
               />
             </div>
             <div className="space-y-2">
+              <label className="text-sm font-medium">Phone</label>
+              <Input
+                type="text"
+                value={formData.phone}
+                onChange={(e) =>
+                  setFormData({ ...formData, phone: e.target.value })
+                }
+                required
+              />
+            </div>
+            <div className="space-y-2">
               <label className="text-sm font-medium">Password</label>
               <Input
                 type="password"
@@ -61,21 +95,20 @@ export const SignUp = () => {
                 required
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Confirm Password</label>
-              <Input
-                type="password"
-                value={formData.confirmPassword}
-                onChange={(e) =>
-                  setFormData({ ...formData, confirmPassword: e.target.value })
-                }
-                required
-              />
-            </div>
-            <Button type="submit" className="w-full">
-              Sign Up
+            {errorMessage && <div className="text-red-500">{errorMessage}</div>}{" "}
+            {/* Show error message */}
+            <Button type="submit" className="w-full" disabled={isAdding}>
+              {isAdding ? "Creating Account..." : "Sign Up"}
             </Button>
           </form>
+          <div className="mt-4 text-center">
+            <p>
+              Already have an account?{" "}
+              <Link to="/signin" className="text-blue-500 hover:underline">
+                Sign In
+              </Link>
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>

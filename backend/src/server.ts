@@ -23,6 +23,14 @@ declare global {
 
 (global as any).__basedir = __dirname;
 
+var corsOptions = {
+  origin: [
+    "http://localhost:5173",
+    "https://taskforcepro2-0-web-wallet-frontend.onrender.com",
+  ],
+  optionsSuccessStatus: 200, // For legacy browser support
+};
+
 const swaggerLetterHead = yaml.load(
   fs.readFileSync(path.join(__dirname, "config", "swagger.yaml"), "utf-8")
 ) as { info: any };
@@ -36,14 +44,8 @@ function configureApp(): express.Application {
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use(express.json());
   app.use(cookieParser());
-  app.use(
-    cors({
-      origin: ["*"],
-      credentials: true,
-      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-      allowedHeaders: ["Content-Type", "Authorization"],
-    })
-  );
+  app.use(cors(corsOptions));
+
   app.use((req, res, next) => {
     logger.info(`${req.method} ${req.url}, {
       ip: req.ip,
