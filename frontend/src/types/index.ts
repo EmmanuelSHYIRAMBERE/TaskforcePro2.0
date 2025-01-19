@@ -3,7 +3,7 @@ export type Transaction = {
   date: string;
   description: string;
   amount: number;
-  type: "income" | "expense";
+  type: "INCOME" | "EXPENSE";
   category: string;
   subcategory?: string;
   account: string;
@@ -12,7 +12,7 @@ export type Transaction = {
 export type Category = {
   id: string;
   name: string;
-  type: "income" | "expense";
+  type: "INCOME" | "EXPENSE";
   subcategories: string[];
   createdAt: Date;
   updatedAt: Date;
@@ -43,4 +43,17 @@ export type Budget = {
   amount: number;
   spent: number;
   period: "monthly" | "yearly";
+};
+
+export type Report = {
+  id: string;
+  startDate: string;
+  endDate: string;
+  totalIncome: number;
+  totalExpense: number;
+  netBalance: number;
+  categoryBreakdown: Category[];
+  accountBreakdown: Account[];
+  transactions: Transaction[];
+  generatedAt: string;
 };

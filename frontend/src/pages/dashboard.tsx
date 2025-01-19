@@ -15,63 +15,125 @@ import {
   Wallet,
   AlertCircle,
   PiggyBank,
+  TriangleDashed,
+  BoxIcon,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Account, Budget, Transaction } from "@/types";
 import { RecentTransactions } from "@/components/recent-transactions";
 import { AccountsOverview } from "@/components/accounts-overview";
 import { BudgetOverview } from "@/components/budget-overview";
 import { SpendingByCategory } from "@/components/spending-by-category";
+import { useEffect, useMemo, useState } from "react";
+import { Budget, Report, Transaction } from "@/types";
+import { Account } from "@/types/account";
+import useFetch from "@/hooks/use-fetch";
+import usePost from "@/hooks/use-post";
 
 const Dashboard = () => {
-  // Sample data - would come from your API/state management
-  const transactions: Transaction[] = [
-    {
-      id: "1",
-      date: "2024-01-19",
-      description: "Salary",
-      amount: 5000,
-      type: "income",
-      category: "Salary",
-      account: "Bank Account",
-    },
-  ];
+  const [report, setReport] = useState<Report | null>(null);
 
-  const accounts: Account[] = [
-    {
-      id: "1",
-      name: "Main Bank Account",
-      type: "bank",
-      balance: 15000,
-      currency: "USD",
-      lastUpdated: "2024-01-19",
-    },
-  ];
+  // Memoize date calculations
+  const dates = useMemo(() => {
+    const end = new Date().toISOString();
+    const start = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    return { startDate: start, endDate: end };
+  }, []);
 
-  const budgets: Budget[] = [
-    {
-      id: "1",
-      category: "Food",
-      amount: 500,
-      spent: 450,
-      period: "monthly",
-    },
-  ];
+  const {
+    data: accountsData,
+    error: accountsError,
+    isLoading: accountsLoading,
+  } = useFetch("/accounts");
+
+  const {
+    data: transactionsData,
+    error: transactionsError,
+    isLoading: transactionsLoading,
+  } = useFetch(`/transactions`);
+
+  const {
+    data: budgetsData,
+    error: budgetsError,
+    isLoading: budgetsLoading,
+  } = useFetch("/budgets");
+
+  const {
+    add: fetchReport,
+    isAdding: reportLoading,
+    error: reportError,
+    // data: reportData,
+  } = usePost("/reports");
+
+  const accounts: Account[] = Array.isArray(accountsData) ? accountsData : [];
+  const transactions: Transaction[] = Array.isArray(transactionsData)
+    ? transactionsData
+    : [];
+  const budgets: Budget[] = Array.isArray(budgetsData) ? budgetsData : [];
+
+  useEffect(() => {
+    const getReport = async () => {
+      try {
+        const response = await fetchReport({
+          startDate: dates.startDate,
+          endDate: dates.endDate,
+        });
+        setReport(response.data);
+      } catch (error) {
+        console.error("Error fetching report:", error);
+      }
+    };
+
+    getReport();
+  }, [fetchReport]);
+
+  const isLoading =
+    accountsLoading || transactionsLoading || budgetsLoading || reportLoading;
+  const error =
+    accountsError || transactionsError || budgetsError || reportError;
+
+  // Calculate summary statistics
+  const summaryStats = {
+    totalBalance: accounts.reduce(
+      (sum: number, account: Account) => sum + account.balance,
+      0
+    ),
+    monthlyIncome: transactions
+      .filter((t: Transaction) => t.type === "INCOME")
+      .reduce((sum: number, t: Transaction) => sum + t.amount, 0),
+    monthlyExpenses: transactions
+      .filter((t: Transaction) => t.type === "EXPENSE")
+      .reduce((sum: number, t: Transaction) => sum + t.amount, 0),
+    savingsRate:
+      report && report?.netBalance > 0
+        ? ((report.netBalance / report.totalIncome) * 100).toFixed(1)
+        : 0,
+  };
+
+  if (isLoading)
+    return (
+      <div className="flex items-center justify-center h-96">Loading...</div>
+    );
+  if (error)
+    return (
+      <Alert variant="destructive">
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    );
 
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-3 gap-4 md:grid-cols-4 lg:grid-cols-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
             <Wallet className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$25,231.89</div>
-            <p className="text-xs text-muted-foreground">
-              +20.1% from last month
-            </p>
+            <div className="text-2xl font-bold">
+              ${summaryStats.totalBalance.toLocaleString()}
+            </div>
+            <p className="text-xs text-muted-foreground">Across all accounts</p>
           </CardContent>
         </Card>
         <Card>
@@ -82,10 +144,10 @@ const Dashboard = () => {
             <ArrowUpCircle className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$5,231.89</div>
-            <p className="text-xs text-muted-foreground">
-              +4.5% from last month
-            </p>
+            <div className="text-2xl font-bold">
+              ${summaryStats.monthlyIncome.toLocaleString()}
+            </div>
+            <p className="text-xs text-muted-foreground">Last 30 days</p>
           </CardContent>
         </Card>
         <Card>
@@ -96,10 +158,10 @@ const Dashboard = () => {
             <ArrowDownCircle className="h-4 w-4 text-red-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$3,542.67</div>
-            <p className="text-xs text-muted-foreground">
-              -2.5% from last month
-            </p>
+            <div className="text-2xl font-bold">
+              ${summaryStats.monthlyExpenses.toLocaleString()}
+            </div>
+            <p className="text-xs text-muted-foreground">Last 30 days</p>
           </CardContent>
         </Card>
         <Card>
@@ -108,20 +170,42 @@ const Dashboard = () => {
             <PiggyBank className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">32.4%</div>
-            <p className="text-xs text-muted-foreground">
-              +2.1% from last month
-            </p>
+            <div className="text-2xl font-bold">
+              {summaryStats.savingsRate}%
+            </div>
+            <p className="text-xs text-muted-foreground">Of monthly income</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total transactions
+            </CardTitle>
+            <TriangleDashed className="h-4 w-4 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{transactions.length}</div>
+            <p className="text-xs text-muted-foreground"></p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Accounts</CardTitle>
+            <BoxIcon className="h-4 w-4 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{accounts.length}</div>
+            <p className="text-xs text-muted-foreground"></p>
           </CardContent>
         </Card>
       </div>
 
       {/* Budget Alerts */}
-      {budgets.some((b) => b.spent > b.amount) && (
+      {budgets.some((b: Budget) => b.spent > b.amount) && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            You have exceeded your budget in some categories. Please check your
+            You have exceeded your budget in some categories. Please review your
             spending.
           </AlertDescription>
         </Alert>
@@ -129,7 +213,7 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        {/* Chart Section */}
+        {/* Transactions Chart */}
         <Card className="col-span-4">
           <CardHeader>
             <CardTitle>Financial Overview</CardTitle>
@@ -143,11 +227,11 @@ const Dashboard = () => {
               </TabsList>
               <TabsContent value="expenses" className="h-[300px]">
                 <LineChart
-                  data={transactions}
+                  data={report?.categoryBreakdown || []}
                   margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
+                  <XAxis dataKey="category.name" />
                   <YAxis />
                   <Tooltip />
                   <Legend />
@@ -159,7 +243,6 @@ const Dashboard = () => {
                   />
                 </LineChart>
               </TabsContent>
-              {/* Add other tabs content */}
             </Tabs>
           </CardContent>
         </Card>
@@ -174,7 +257,7 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Accounts Overview */}
+        {/* Account Overview */}
         <Card className="col-span-3">
           <CardHeader>
             <CardTitle>Accounts</CardTitle>
@@ -184,7 +267,7 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Spending by Category */}
+        {/* Category Spending */}
         <Card className="col-span-4">
           <CardHeader>
             <CardTitle>Spending by Category</CardTitle>

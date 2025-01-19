@@ -50,7 +50,7 @@ export const SignUp = () => {
   });
 
   const [showSuccess, setShowSuccess] = useState(false);
-  const { add, isAdding, error } = usePost("/api/v1/user");
+  const { add, isAdding, error } = usePost("/user");
 
   console.log("error", error);
 

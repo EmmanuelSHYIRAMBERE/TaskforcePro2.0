@@ -17,8 +17,6 @@ const mainRouter = express.Router();
 mainRouter.use("/user", userRouter);
 mainRouter.use("/auth", authRouter);
 
-mainRouter.use(refreshAccessToken);
-
 mainRouter.use("/accounts", accountRouter);
 mainRouter.use("/transactions", transactionRouter);
 mainRouter.use("/reports", reportRouter);

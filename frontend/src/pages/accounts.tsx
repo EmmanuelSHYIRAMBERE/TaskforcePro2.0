@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import {
   Table,
   TableBody,
@@ -11,102 +12,139 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Plus, Pencil, Trash2, ArrowLeftRight } from "lucide-react";
 import { AccountForm } from "@/components/forms/account-form";
-import { Account, Transfer } from "@/types";
+import { Account } from "@/types/account";
 import { useToast } from "@/hooks/use-toast";
-import { z } from "zod";
+import usePost from "@/hooks/use-post";
 import TransferForm from "@/components/forms/transfer-form";
 import { DeleteAccountDialog } from "@/components/delete-account-dialog";
-import { AccountSchema } from "@/components/forms/schemas";
+
+const API_BASE_URL = "/api/v1";
 
 const Accounts = () => {
-  const [accounts, setAccounts] = useState<Account[]>([
-    {
-      id: "1",
-      name: "Main Bank Account",
-      type: "bank",
-      balance: 5000,
-      currency: "USD",
-      lastUpdated: "2024-01-19",
-      accountNumber: "****1234",
-    },
-  ]);
-
+  const [accounts, setAccounts] = useState<Account[] | null>(null);
+  const [loading, setLoading] = useState(true);
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [showTransfer, setShowTransfer] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
   const [deletingAccount, setDeletingAccount] = useState<Account | null>(null);
   const { toast } = useToast();
 
-  const handleAddAccount = (data: z.infer<typeof AccountSchema>) => {
-    const newAccount: Account = {
-      ...data,
-      id: Math.random().toString(36).substr(2, 9),
-      lastUpdated: new Date().toISOString(),
-    };
-    setAccounts([...accounts, newAccount]);
-    setShowAddAccount(false);
-    toast({
-      title: "Account Added",
-      description: "New account has been successfully created.",
-    });
+  const { add, isAdding } = usePost("/accounts");
+
+  const fetchAccounts = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API_BASE_URL}/accounts`);
+      setAccounts(response.data?.data || []);
+    } catch (error) {
+      console.log("Error fetching accounts", error);
+      toast({
+        title: "Error",
+        description: "Failed to load accounts",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleEditAccount = (data: z.infer<typeof AccountSchema>) => {
+  useEffect(() => {
+    fetchAccounts();
+  }, []);
+
+  const handleAddAccount = async (data: Omit<Account, "_id">) => {
+    try {
+      const response = await add(data);
+
+      console.log("Add account response", response);
+
+      await fetchAccounts();
+      setShowAddAccount(false);
+      toast({
+        title: "Success",
+        description: "Account created successfully",
+      });
+    } catch (error) {
+      console.log("Error creating account", error);
+      toast({
+        title: "Error",
+        description: "Failed to create account",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleEditAccount = async (data: Partial<Account>) => {
     if (!editingAccount) return;
 
-    const updatedAccount: Account = {
-      ...editingAccount,
-      ...data,
-      lastUpdated: new Date().toISOString(),
-    };
-    setAccounts(
-      accounts.map((a) => (a.id === updatedAccount.id ? updatedAccount : a))
-    );
-    setEditingAccount(null);
-    toast({
-      title: "Account Updated",
-      description: "Account details have been successfully updated.",
-    });
+    try {
+      await axios.patch(`${API_BASE_URL}/accounts/${editingAccount._id}`, data);
+      await fetchAccounts();
+      setEditingAccount(null);
+      toast({
+        title: "Success",
+        description: "Account updated successfully",
+      });
+    } catch (error) {
+      console.log("Error updating account", error);
+      toast({
+        title: "Error",
+        description: "Failed to update account",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDeleteAccount = (accountId: string) => {
-    setAccounts(accounts.filter((a) => a.id !== accountId));
-    setDeletingAccount(null);
-    toast({
-      title: "Account Deleted",
-      description: "Account has been successfully deleted.",
-    });
+  const handleDeleteAccount = async (accountId: string) => {
+    try {
+      await axios.delete(`${API_BASE_URL}/accounts/${accountId}`);
+      await fetchAccounts();
+      setDeletingAccount(null);
+      toast({
+        title: "Success",
+        description: "Account deleted successfully",
+      });
+    } catch (error) {
+      console.log("Error deleting account", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete account",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleTransfer = (data: {
+  const handleTransfer = async (data: {
     fromAccount: string;
     toAccount: string;
     amount: number;
     description?: string;
   }) => {
-    const transfer: Omit<Transfer, "id"> = {
-      ...data,
-      description: data.description || "",
-      date: new Date().toISOString(),
-    };
-
-    setAccounts(
-      accounts.map((account) => {
-        if (account.id === transfer.fromAccount) {
-          return { ...account, balance: account.balance - transfer.amount };
-        }
-        if (account.id === transfer.toAccount) {
-          return { ...account, balance: account.balance + transfer.amount };
-        }
-        return account;
-      })
-    );
-    setShowTransfer(false);
-    toast({
-      title: "Transfer Complete",
-      description: "Money has been successfully transferred.",
-    });
+    try {
+      await axios.post(`${API_BASE_URL}/transfers`, data);
+      await fetchAccounts();
+      setShowTransfer(false);
+      toast({
+        title: "Success",
+        description: "Transfer completed successfully",
+      });
+    } catch (error) {
+      console.log("Error transferring funds", error);
+      toast({
+        title: "Error",
+        description: "Failed to complete transfer",
+        variant: "destructive",
+      });
+    }
   };
+
+  if (loading) {
+    return <div>Loading accounts...</div>;
+  }
+
+  if (!accounts) {
+    return <div>No accounts available.</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -128,7 +166,6 @@ const Accounts = () => {
         </div>
       </div>
 
-      {/* Account Summary Cards */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -137,9 +174,11 @@ const Accounts = () => {
           <CardContent>
             <div className="text-2xl font-bold">
               $
-              {accounts
-                .reduce((sum, acc) => sum + acc.balance, 0)
-                .toLocaleString()}
+              {Array.isArray(accounts)
+                ? accounts
+                    .reduce((sum, acc) => sum + (acc.balance || 0), 0)
+                    .toLocaleString()
+                : "0"}
             </div>
           </CardContent>
         </Card>
@@ -150,7 +189,11 @@ const Accounts = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{accounts.length}</div>
+            <div className="text-2xl font-bold">
+              {Array.isArray(accounts)
+                ? accounts.filter((acc) => acc.isActive).length
+                : 0}
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -159,17 +202,20 @@ const Accounts = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {new Date(
-                Math.max(
-                  ...accounts.map((a) => new Date(a.lastUpdated).getTime())
-                )
-              ).toLocaleDateString()}
+              {accounts.length > 0
+                ? new Date(
+                    Math.max(
+                      ...accounts
+                        .filter((a) => a.updatedAt)
+                        .map((a) => new Date(a.updatedAt).getTime())
+                    )
+                  ).toLocaleDateString()
+                : "N/A"}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Accounts Table */}
       <Card>
         <CardContent className="p-0">
           <Table>
@@ -177,25 +223,37 @@ const Accounts = () => {
               <TableRow>
                 <TableHead>Account Name</TableHead>
                 <TableHead>Type</TableHead>
-                <TableHead>Account Number</TableHead>
-                <TableHead className="text-right">Balance</TableHead>
-                <TableHead>Last Updated</TableHead>
+                <TableHead>Balance</TableHead>
+                <TableHead>Currency</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {accounts.map((account) => (
-                <TableRow key={account.id}>
-                  <TableCell className="font-medium">{account.name}</TableCell>
-                  <TableCell className="capitalize">
-                    {account.type.replace("_", " ")}
+                <TableRow key={account._id}>
+                  <TableCell className="font-medium">
+                    {account.name || "N/A"}
                   </TableCell>
-                  <TableCell>{account.accountNumber || "N/A"}</TableCell>
-                  <TableCell className="text-right">
-                    {account.currency} {account.balance.toLocaleString()}
+                  <TableCell className="capitalize">
+                    {account.type
+                      ? account.type.toLowerCase().replace("_", " ")
+                      : "N/A"}
                   </TableCell>
                   <TableCell>
-                    {new Date(account.lastUpdated).toLocaleDateString()}
+                    {(account.balance || 0).toLocaleString()}
+                  </TableCell>
+                  <TableCell>{account.currency || "N/A"}</TableCell>
+                  <TableCell>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs ${
+                        account.isActive
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {account.isActive ? "Active" : "Inactive"}
+                    </span>
                   </TableCell>
                   <TableCell className="text-right space-x-2">
                     <Button
@@ -220,14 +278,20 @@ const Accounts = () => {
         </CardContent>
       </Card>
 
-      {/* Modals */}
       <AccountForm
         open={showAddAccount || !!editingAccount}
         onClose={() => {
           setShowAddAccount(false);
           setEditingAccount(null);
         }}
-        onSubmit={editingAccount ? handleEditAccount : handleAddAccount}
+        onSubmit={(data: Partial<Account>) => {
+          if (editingAccount) {
+            handleEditAccount(data);
+          } else {
+            handleAddAccount(data as Omit<Account, "_id">);
+          }
+        }}
+        isLoading={isAdding}
         account={editingAccount}
       />
 
@@ -235,7 +299,7 @@ const Accounts = () => {
         open={showTransfer}
         onClose={() => setShowTransfer(false)}
         onSubmit={handleTransfer}
-        accounts={accounts}
+        accounts={accounts || []}
       />
 
       <DeleteAccountDialog

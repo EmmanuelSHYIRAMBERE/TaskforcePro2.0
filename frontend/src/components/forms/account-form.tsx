@@ -24,30 +24,39 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Account } from "@/types";
-import { AccountSchema } from "./schemas";
+import { Account } from "@/types/account";
+
+const accountSchema = z.object({
+  name: z.string().min(1, "Account name is required"),
+  type: z.enum(["BANK", "MOBILE_MONEY", "CASH", "OTHER"]),
+  currency: z.string().min(1, "Currency is required"),
+  description: z.string().optional(),
+  isActive: z.boolean().optional(),
+});
 
 interface AccountFormProps {
   open: boolean;
+  isLoading: boolean;
   onClose: () => void;
-  onSubmit: (data: z.infer<typeof AccountSchema>) => void;
+  onSubmit: (data: z.infer<typeof accountSchema>) => void;
   account?: Account | null;
 }
 
 export const AccountForm = ({
   open,
+  isLoading,
   onClose,
   onSubmit,
   account,
 }: AccountFormProps) => {
   const form = useForm({
-    resolver: zodResolver(AccountSchema),
+    resolver: zodResolver(accountSchema),
     defaultValues: account || {
       name: "",
-      type: "bank",
-      balance: 0,
+      type: "BANK",
       currency: "USD",
-      accountNumber: "",
+      description: "",
+      isActive: true,
     },
   });
 
@@ -88,9 +97,10 @@ export const AccountForm = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="bank">Bank Account</SelectItem>
-                      <SelectItem value="cash">Cash</SelectItem>
-                      <SelectItem value="mobile_money">Mobile Money</SelectItem>
+                      <SelectItem value="BANK">Bank Account</SelectItem>
+                      <SelectItem value="MOBILE_MONEY">Mobile Money</SelectItem>
+                      <SelectItem value="CASH">Cash</SelectItem>
+                      <SelectItem value="OTHER">Other</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -99,29 +109,10 @@ export const AccountForm = ({
             />
             <FormField
               control={form.control}
-              name="balance"
+              name="currency"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Initial Balance</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      {...field}
-                      onChange={(e) =>
-                        field.onChange(parseFloat(e.target.value))
-                      }
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="accountNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Account Number (Optional)</FormLabel>
+                  <FormLabel>Currency</FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
@@ -129,8 +120,25 @@ export const AccountForm = ({
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">
-              {account ? "Update Account" : "Create Account"}
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description (Optional)</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading
+                ? "Processing..."
+                : account
+                ? "Update Account"
+                : "Create Account"}
             </Button>
           </form>
         </Form>

@@ -10,7 +10,7 @@ export const SpendingByCategory = ({
 }: SpendingByCategoryProps) => {
   // Process transactions to get category totals
   const categoryTotals = transactions
-    .filter((t) => t.type === "expense")
+    .filter((t: Transaction) => t.type === "EXPENSE")
     .reduce((acc, curr) => {
       acc[curr.category] = (acc[curr.category] || 0) + curr.amount;
       return acc;

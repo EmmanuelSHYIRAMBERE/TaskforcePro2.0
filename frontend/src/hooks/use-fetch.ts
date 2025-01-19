@@ -6,7 +6,11 @@ import { SERVER_BASE_URL } from "@/constansts/constants";
 
 const fetchData = async (url: string) => {
   try {
-    const response = await axios.get(url);
+    const token = localStorage.getItem("token");
+
+    const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+
+    const response = await axios.get(url, { headers });
     return response.data;
   } catch (error) {
     console.log(error);

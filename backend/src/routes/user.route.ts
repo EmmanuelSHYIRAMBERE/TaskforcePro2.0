@@ -12,7 +12,6 @@ const userControllerInstance = new userController();
 
 userRouter.post("/", userControllerInstance.createUser);
 
-userRouter.use(refreshAccessToken);
 userRouter.get(
   "/",
   verifyAccessToken,

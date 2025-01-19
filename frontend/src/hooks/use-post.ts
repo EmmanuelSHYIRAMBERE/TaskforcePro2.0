@@ -8,7 +8,13 @@ const addData = async (
   { arg }: { arg: Record<string, unknown> }
 ) => {
   try {
-    const response = await axios.post(url, arg);
+    // Retrieve token from local storage
+    const token = localStorage.getItem("token");
+
+    const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+
+    const response = await axios.post(url, arg, { headers });
+
     return response.data;
   } catch (error) {
     console.error("Error adding data:", error);

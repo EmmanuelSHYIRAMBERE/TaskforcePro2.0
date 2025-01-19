@@ -1,4 +1,4 @@
-import { Account } from "@/types";
+import { Account } from "@/types/account";
 import { CreditCard } from "lucide-react";
 
 export const AccountsOverview = ({ accounts }: { accounts: Account[] }) => {
@@ -6,7 +6,7 @@ export const AccountsOverview = ({ accounts }: { accounts: Account[] }) => {
     <div className="space-y-4">
       {accounts.map((account) => (
         <div
-          key={account.id}
+          key={account._id}
           className="flex items-center justify-between p-2 hover:bg-muted rounded-lg"
         >
           <div className="flex items-center space-x-4">

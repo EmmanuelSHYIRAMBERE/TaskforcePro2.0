@@ -13,14 +13,12 @@ export const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const { add, isAdding } = usePost("/api/v1/auth/login");
+  const { add, isAdding } = usePost("/auth/login");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const response = await add({ email, password });
-
-      console.log("response sign in", response);
 
       if (response && response.access_token) {
         localStorage.setItem("token", response.access_token);
