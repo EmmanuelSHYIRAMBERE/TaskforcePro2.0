@@ -1,53 +1,44 @@
-export interface User {
+export type Transaction = {
   id: string;
-  email: string;
-  name: string;
-  preferences: {
-    currency: string;
-    timezone: string;
-    notifications: NotificationPreferences;
-  };
-}
-
-export interface Account {
-  id: string;
-  userId: string;
-  name: string;
-  type: "bank" | "mobile_money" | "cash";
-  balance: number;
-  currency: string;
-}
-
-export interface Category {
-  id: string;
-  name: string;
-  parentId?: string;
-  budget?: number;
-  color?: string;
-}
-
-export interface Transaction {
-  id: string;
-  accountId: string;
-  categoryId: string;
+  date: string;
+  description: string;
   amount: number;
   type: "income" | "expense";
-  description: string;
-  date: Date;
-  tags?: string[];
-}
+  category: string;
+  subcategory?: string;
+  account: string;
+};
 
-export interface Budget {
+export type Category = {
   id: string;
-  categoryId: string;
-  amount: number;
-  period: "monthly" | "weekly" | "yearly";
-  startDate: Date;
-  endDate?: Date;
-}
+  name: string;
+  type: "income" | "expense";
+  subcategories: string[];
+};
 
-export interface NotificationPreferences {
-  budgetAlerts: boolean;
-  weeklyReports: boolean;
-  monthlyReports: boolean;
-}
+export type Account = {
+  id: string;
+  name: string;
+  type: "bank" | "cash" | "mobile_money";
+  balance: number;
+  currency: string;
+  lastUpdated: string;
+  accountNumber?: string;
+};
+
+export type Transfer = {
+  id: string;
+  fromAccount: string;
+  toAccount: string;
+  amount: number;
+  date: string;
+  description: string;
+};
+
+export type Budget = {
+  id: string;
+  category: string;
+  amount: number;
+  spent: number;
+  period: "monthly" | "yearly";
+};

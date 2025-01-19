@@ -3,15 +3,15 @@ import { Toaster } from "@/components/ui/toaster";
 
 import { MainLayout } from "./components/layout/main-layout";
 import { PrivateRoute } from "./components/auth/private-route";
-import { Dashboard } from "./pages/dashboard";
 import Transactions from "./pages/transactions";
 import Reports from "./pages/reports";
 import Budget from "./pages/budget/Budget";
 import { SignIn } from "./components/auth/sign-in";
 import { SignUp } from "./components/auth/sign-up";
-import { Accounts } from "./pages/accounts";
 import { Categories } from "./pages/categories";
 import { Settings } from "./pages/settings";
+import Dashboard from "./pages/dashboard";
+import Accounts from "./pages/accounts";
 
 function App() {
   return (

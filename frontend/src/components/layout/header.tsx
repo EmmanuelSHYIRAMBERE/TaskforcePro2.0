@@ -14,21 +14,22 @@ import { NotificationCenter } from "./notification-center";
 export const Header = () => {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center px-4">
-        <MobileMenu />
-
-        <div className="hidden md:flex">
-          <h2 className="text-lg font-semibold">Wallet App</h2>
+      <div className="h-16 px-4 flex items-center justify-between max-w-[1920px] mx-auto w-full">
+        <div className="flex items-center">
+          <MobileMenu />
+          <div className="hidden md:flex">
+            <h2 className="text-lg font-semibold">Wallet App</h2>
+          </div>
         </div>
 
-        <div className="flex flex-1 items-center justify-end space-x-4">
-          <div className="hidden md:flex">
-            <div className="relative">
+        <div className="flex items-center gap-4">
+          <div className="hidden md:flex max-w-md flex-1">
+            <div className="relative w-full">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
                 placeholder="Search transactions, categories..."
-                className="w-[300px] pl-8"
+                className="w-full pl-8"
               />
             </div>
           </div>

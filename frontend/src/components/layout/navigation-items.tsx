@@ -9,8 +9,6 @@ import {
   FileText,
   Settings,
   HelpCircle,
-  Target,
-  CreditCard,
 } from "lucide-react";
 
 export const navigation = [
@@ -43,18 +41,6 @@ export const navigation = [
     href: "/budget",
     icon: PieChart,
     description: "Set and track budgets",
-  },
-  {
-    name: "Goals",
-    href: "/goals",
-    icon: Target,
-    description: "Track financial goals",
-  },
-  {
-    name: "Bills",
-    href: "/bills",
-    icon: CreditCard,
-    description: "Manage recurring bills",
   },
   {
     name: "Reports",
