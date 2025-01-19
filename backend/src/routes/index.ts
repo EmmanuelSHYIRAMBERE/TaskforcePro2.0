@@ -10,6 +10,7 @@ import budgetRouter from "./budget.route";
 import categoryRouter from "./category.route";
 import expenseRouter from "./expense.route";
 import notificationRouter from "./notification.route";
+import accountRouter from "./account.route";
 
 const mainRouter = express.Router();
 
@@ -18,6 +19,7 @@ mainRouter.use("/auth", authRouter);
 
 mainRouter.use(refreshAccessToken);
 
+mainRouter.use("/accounts", accountRouter);
 mainRouter.use("/transactions", transactionRouter);
 mainRouter.use("/reports", reportRouter);
 mainRouter.use("/budgets", budgetRouter);

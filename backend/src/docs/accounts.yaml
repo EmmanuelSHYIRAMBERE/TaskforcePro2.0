@@ -1,0 +1,220 @@
+paths:
+  /api/v1/accounts:
+    post:
+      summary: Create a new account
+      tags:
+        - Accounts
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - type
+              properties:
+                name:
+                  type: string
+                type:
+                  type: string
+                  enum: [BANK, MOBILE_MONEY, CASH, OTHER]
+                currency:
+                  type: string
+                description:
+                  type: string
+      responses:
+        201:
+          description: Account created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountResponse"
+
+    get:
+      summary: Get all accounts
+      tags:
+        - Accounts
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [BANK, MOBILE_MONEY, CASH, OTHER]
+        - in: query
+          name: isActive
+          schema:
+            type: boolean
+      responses:
+        200:
+          description: List of accounts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  results:
+                    type: number
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Account"
+
+  /api/v1/accounts/{id}:
+    get:
+      summary: Get account by ID
+      tags:
+        - Accounts
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Account details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountResponse"
+
+    patch:
+      summary: Update account
+      tags:
+        - Accounts
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                type:
+                  type: string
+                  enum: [BANK, MOBILE_MONEY, CASH, OTHER]
+                currency:
+                  type: string
+                description:
+                  type: string
+                isActive:
+                  type: boolean
+      responses:
+        200:
+          description: Account updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountResponse"
+
+    delete:
+      summary: Delete account
+      tags:
+        - Accounts
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: Account deleted successfully
+
+  /api/v1/accounts/{id}/balance:
+    get:
+      summary: Get account balance and transaction summary
+      tags:
+        - Accounts
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Account balance details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      account:
+                        $ref: "#/components/schemas/Account"
+                      balance:
+                        type: number
+                      transactions:
+                        type: object
+                        properties:
+                          totalIncome:
+                            type: number
+                          totalExpenses:
+                            type: number
+
+components:
+  schemas:
+    Account:
+      type: object
+      properties:
+        _id:
+          type: string
+        user:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum: [BANK, MOBILE_MONEY, CASH, OTHER]
+        balance:
+          type: number
+        currency:
+          type: string
+        description:
+          type: string
+        isActive:
+          type: boolean
+        lastUpdated:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    AccountResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        data:
+          $ref: "#/components/schemas/Account"
