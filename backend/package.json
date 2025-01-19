@@ -5,8 +5,7 @@
   "scripts": {
     "server": "nodemon",
     "start": "node dist/server.js",
-    "build": "tsc && npm run copy-files",
-    "copy-files": "npx copyfiles -u 1 src/**/*.yaml dist/"
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
