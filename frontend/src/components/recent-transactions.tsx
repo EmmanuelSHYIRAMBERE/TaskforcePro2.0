@@ -17,12 +17,12 @@ export const RecentTransactions = ({
           <div className="flex items-center space-x-4">
             <div
               className={`p-2 rounded-full ${
-                transaction.type === "income"
+                transaction.type === "INCOME"
                   ? "bg-green-100 text-green-600"
                   : "bg-red-100 text-red-600"
               }`}
             >
-              {transaction.type === "income" ? (
+              {transaction.type === "INCOME" ? (
                 <ArrowUpCircle />
               ) : (
                 <ArrowDownCircle />
@@ -37,10 +37,10 @@ export const RecentTransactions = ({
           </div>
           <div
             className={`text-sm font-medium ${
-              transaction.type === "income" ? "text-green-600" : "text-red-600"
+              transaction.type === "INCOME" ? "text-green-600" : "text-red-600"
             }`}
           >
-            {transaction.type === "income" ? "+" : "-"}$
+            {transaction.type === "INCOME" ? "+" : "-"}$
             {Math.abs(transaction.amount)}
           </div>
         </div>

@@ -3,7 +3,7 @@ import { Account, Category } from "@/lib/types";
 export type TransactionType = "EXPENSE" | "INCOME";
 
 export interface Transaction {
-  id: string;
+  _id: string;
   user: string;
   account: Account;
   category: Category;
