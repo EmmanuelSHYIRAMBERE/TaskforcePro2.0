@@ -14,11 +14,9 @@ import { AccountCard } from "@/components/dashboard/account-card";
 import { DataTable } from "@/components/ui/data-table";
 
 export function Dashboard() {
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [recentTransactions, setRecentTransactions] = useState<Transaction[]>(
-    []
-  );
-  const [spendingData, setSpendingData] = useState<any[]>([]);
+  const [accounts] = useState<Account[]>([]);
+  const [recentTransactions] = useState<Transaction[]>([]);
+  const [spendingData] = useState<any[]>([]);
 
   // Fetch data effects would go here
 

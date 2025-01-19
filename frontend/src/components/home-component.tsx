@@ -13,9 +13,9 @@ import {
 import { PlusCircle, Wallet, ArrowUpRight, ArrowDownRight } from "lucide-react";
 
 const HomeComponent = () => {
-  const [totalBalance, setTotalBalance] = useState(5000);
-  const [expenses, setExpenses] = useState(2000);
-  const [income, setIncome] = useState(7000);
+  const [totalBalance] = useState(5000);
+  const [expenses] = useState(2000);
+  const [income] = useState(7000);
 
   const chartData = [
     { month: "Jan", expenses: 1200, income: 3000 },

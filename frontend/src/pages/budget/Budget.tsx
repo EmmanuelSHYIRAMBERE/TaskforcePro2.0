@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 
 const Budget: React.FC = () => {
-  const [budget, setBudget] = useState(1000);
-  const [expense, setExpense] = useState(700);
+  const [budget] = useState(1000);
+  const [expense] = useState(700);
 
   return (
     <div className="p-4">
