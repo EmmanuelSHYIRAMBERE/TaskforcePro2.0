@@ -80,56 +80,58 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="account">Account</Label>
-        <Select
-          value={formData.account?.id}
-          onValueChange={(value) =>
-            setFormData({
-              ...formData,
-              account: accounts.find((a) => a.id === value),
-            })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select account" />
-          </SelectTrigger>
-          <SelectContent>
-            {accounts.map((account) => (
-              <SelectItem key={account.id} value={account.id}>
-                {account.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="category">Category</Label>
-        <Select
-          value={formData.category?.id}
-          onValueChange={(value) =>
-            setFormData({
-              ...formData,
-              category: categories.find((c) => c.id === value),
-            })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select category" />
-          </SelectTrigger>
-          <SelectContent>
-            {categories
-              .filter(
-                (cat) => !cat.type || cat.type?.toString() === formData.type
-              )
-              .map((category) => (
-                <SelectItem key={category.id} value={category.id}>
-                  {category.name}
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <Label htmlFor="account">Account</Label>
+          <Select
+            value={formData.account?.id}
+            onValueChange={(value) =>
+              setFormData({
+                ...formData,
+                account: accounts.find((a) => a.id === value),
+              })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select account" />
+            </SelectTrigger>
+            <SelectContent>
+              {accounts.map((account) => (
+                <SelectItem key={account.id} value={account.id}>
+                  {account.name}
                 </SelectItem>
               ))}
-          </SelectContent>
-        </Select>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="category">Category</Label>
+          <Select
+            value={formData.category?.id}
+            onValueChange={(value) =>
+              setFormData({
+                ...formData,
+                category: categories.find((c) => c.id === value),
+              })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select category" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories
+                .filter(
+                  (cat) => !cat.type || cat.type?.toString() === formData.type
+                )
+                .map((category) => (
+                  <SelectItem key={category.id} value={category.id}>
+                    {category.name}
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="space-y-2">

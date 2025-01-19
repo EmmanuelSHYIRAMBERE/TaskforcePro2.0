@@ -29,6 +29,7 @@ const Transactions: React.FC = () => {
   const fetchAccounts = async () => {
     try {
       const response = await fetch("/api/v1/accounts");
+
       const data = await response.json();
       setAccounts(data.data);
     } catch (error) {

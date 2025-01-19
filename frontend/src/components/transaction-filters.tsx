@@ -108,7 +108,6 @@ export const TransactionFiltersComponent: React.FC<
               <SelectValue placeholder="Select type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Types</SelectItem>
               <SelectItem value="EXPENSE">Expense</SelectItem>
               <SelectItem value="INCOME">Income</SelectItem>
             </SelectContent>
