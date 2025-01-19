@@ -31,11 +31,14 @@ var corsOptions = {
   optionsSuccessStatus: 200, // For legacy browser support
 };
 
+console.log("Resolved paths:", {
+  docs: path.join(__dirname, "src/docs/*.yaml"),
+  routes: path.join(__dirname, "src/routes/*.js"),
+});
+
 const swaggerLetterHead = yaml.load(
   fs.readFileSync(path.join(__dirname, "config", "swagger.yaml"), "utf-8")
 ) as { info: any };
-
-// expose static files
 
 function configureApp(): express.Application {
   const app = express();
@@ -60,18 +63,16 @@ function configureApp(): express.Application {
       info: swaggerLetterHead.info,
       servers: [
         {
+          url: "https://taskforcepro2-0.onrender.com",
+          description: "Production",
+        },
+        {
           url: "http://localhost:8000",
           description: "Localhost",
         },
       ],
     },
-    apis: [
-      "./config/*.js",
-      "./config/*.yaml",
-      "./docs/*.js",
-      "./docs/*.yaml",
-      "./routes/*.js",
-    ],
+    apis: ["./docs/*.js", "./docs/*.yaml", "./routes/*.js"],
   };
   const swaggerDocument = swaggerJSDoc(options);
 

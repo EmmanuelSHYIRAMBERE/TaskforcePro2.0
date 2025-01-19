@@ -1,0 +1,191 @@
+paths:
+  /api/v1/transactions:
+    post:
+      summary: Create a new transaction
+      tags:
+        - Transactions
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - account
+                - category
+                - type
+                - amount
+              properties:
+                account:
+                  type: string
+                  description: ID of the account
+                category:
+                  type: string
+                  description: ID of the category
+                subcategory:
+                  type: string
+                  description: ID of the subcategory (optional)
+                type:
+                  type: string
+                  enum: [EXPENSE, INCOME]
+                amount:
+                  type: number
+                description:
+                  type: string
+                date:
+                  type: string
+                  format: date-time
+                tags:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        201:
+          description: Transaction created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+    
+    get:
+      summary: Get all transactions
+      tags:
+        - Transactions
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: category
+          schema:
+            type: string
+        - in: query
+          name: account
+          schema:
+            type: string
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [EXPENSE, INCOME]
+      responses:
+        200:
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  results:
+                    type: number
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Transaction'
+
+  /api/v1/transactions/report:
+    get:
+      summary: Generate transaction report
+      tags:
+        - Transactions
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: startDate
+          required: true
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: endDate
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        200:
+          description: Transaction report generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TransactionReport'
+
+components:
+  schemas:
+    Transaction:
+      type: object
+      properties:
+        _id:
+          type: string
+        user:
+          type: string
+        account:
+          $ref: '#/components/schemas/Account'
+        category:
+          $ref: '#/components/schemas/Category'
+        subcategory:
+          $ref: '#/components/schemas/Category'
+        type:
+          type: string
+          enum: [EXPENSE, INCOME]
+        amount:
+          type: number
+        description:
+          type: string
+        date:
+          type: string
+          format: date-time
+        tags:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    TransactionReport:
+      type: object
+      properties:
+        _id:
+          type: object
+          properties:
+            type:
+              type: string
+            category:
+              type: string
+            year:
+              type: number
+            month:
+              type: number
+        total:
+          type: number
+        count:
+          type: number
+        categoryInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'

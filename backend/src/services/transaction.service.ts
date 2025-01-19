@@ -1,3 +1,4 @@
+import { FilterQuery, Schema } from "mongoose";
 import { Account } from "../models/account.model";
 import { Budget } from "../models/budget.model";
 import { ITransaction, Transaction } from "../models/transaction.model";
@@ -16,29 +17,31 @@ export class TransactionService {
       const account = await Account.findById(data.account);
       if (!account) throw new Error("Account not found");
 
-      if (data.amount === undefined) {
-        throw new Error("Transaction amount is required");
-      }
-
-      const balanceChange = data.type === "INCOME" ? data.amount : -data.amount;
+      const balanceChange =
+        data.type === "INCOME" ? data.amount! : -data.amount!;
       account.balance += balanceChange;
       await account.save({ session });
 
-      // Update budget if it exists
+      // Check budget limits and send notifications
       if (data.type === "EXPENSE") {
         const budget = await Budget.findOne({
+          user: data.user,
           category: data.category,
           startDate: { $lte: data.date },
           endDate: { $gte: data.date },
         });
 
         if (budget) {
-          budget.spent += data.amount;
+          budget.spent += data.amount!;
           await budget.save({ session });
 
-          // Check if budget exceeded
-          if (budget.spent > budget.amount && budget.notifications) {
-            await NotificationService.sendBudgetAlert(budget);
+          if (budget.spent > budget.amount) {
+            await NotificationService.sendBudgetAlert({
+              userId: data.user!.toString(),
+              budgetId: budget._id as Schema.Types.ObjectId,
+              category: budget.category as Schema.Types.ObjectId,
+              overspentAmount: budget.spent - budget.amount,
+            });
           }
         }
       }
@@ -53,15 +56,60 @@ export class TransactionService {
     }
   }
 
-  static async getTransactions(userId: string, filters: any = {}) {
+  static async getTransactions(
+    userId: string,
+    filters: FilterQuery<ITransaction> = {}
+  ) {
     const query = { user: userId, ...filters };
     return Transaction.find(query)
-      .populate("account")
-      .populate("category")
+      .populate("account", "name type")
+      .populate("category", "name type")
+      .populate("subcategory", "name")
       .sort({ date: -1 });
   }
 
-  static async getTransactionsSummary(
+  static async generateReport(userId: string, startDate: Date, endDate: Date) {
+    const pipeline = [
+      {
+        $match: {
+          user: userId,
+          date: { $gte: startDate, $lte: endDate },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            type: "$type",
+            category: "$category",
+            year: { $year: "$date" },
+            month: { $month: "$date" },
+          },
+          total: { $sum: "$amount" },
+          count: { $sum: 1 },
+          transactions: { $push: "$$ROOT" },
+        },
+      },
+      {
+        $lookup: {
+          from: "categories",
+          localField: "_id.category",
+          foreignField: "_id",
+          as: "categoryInfo",
+        },
+      },
+      {
+        $sort: {
+          "_id.year": 1 as 1 | -1,
+          "_id.month": 1 as 1 | -1,
+          total: -1 as 1 | -1,
+        },
+      },
+    ];
+
+    return Transaction.aggregate(pipeline);
+  }
+
+  static async getTransactionsByCategory(
     userId: string,
     startDate: Date,
     endDate: Date
@@ -75,11 +123,17 @@ export class TransactionService {
       },
       {
         $group: {
-          _id: {
-            type: "$type",
-            category: "$category",
-          },
+          _id: "$category",
           total: { $sum: "$amount" },
+          transactions: { $push: "$$ROOT" },
+        },
+      },
+      {
+        $lookup: {
+          from: "categories",
+          localField: "_id",
+          foreignField: "_id",
+          as: "categoryInfo",
         },
       },
     ]);

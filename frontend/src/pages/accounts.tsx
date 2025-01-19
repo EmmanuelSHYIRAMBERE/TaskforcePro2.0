@@ -86,6 +86,7 @@ const Accounts = () => {
   }) => {
     const transfer: Omit<Transfer, "id"> = {
       ...data,
+      description: data.description || "",
       date: new Date().toISOString(),
     };
 

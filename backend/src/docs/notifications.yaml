@@ -1,0 +1,155 @@
+paths:
+  /api/v1/notifications:
+    get:
+      summary: Get all notifications
+      tags:
+        - Notifications
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: isRead
+          schema:
+            type: boolean
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [BUDGET_ALERT, BUDGET_WARNING, BUDGET_EXCEEDED]
+      responses:
+        200:
+          description: List of notifications
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  results:
+                    type: number
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Notification"
+
+  /api/v1/notifications/unread:
+    get:
+      summary: Get unread notifications count
+      tags:
+        - Notifications
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Number of unread notifications
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      count:
+                        type: number
+
+  /api/v1/notifications/mark-all-read:
+    post:
+      summary: Mark all notifications as read
+      tags:
+        - Notifications
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: All notifications marked as read
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    type: null
+
+  /api/v1/notifications/clear-all:
+    delete:
+      summary: Delete all notifications
+      tags:
+        - Notifications
+      security:
+        - BearerAuth: []
+      responses:
+        204:
+          description: All notifications cleared
+
+  /api/v1/notifications/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+
+    post:
+      summary: Mark a notification as read
+      tags:
+        - Notifications
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Notification marked as read
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationResponse"
+
+    delete:
+      summary: Delete a notification
+      tags:
+        - Notifications
+      security:
+        - BearerAuth: []
+      responses:
+        204:
+          description: Notification deleted successfully
+
+components:
+  schemas:
+    Notification:
+      type: object
+      properties:
+        _id:
+          type: string
+        user:
+          type: string
+        type:
+          type: string
+          enum: [BUDGET_ALERT, BUDGET_WARNING, BUDGET_EXCEEDED]
+        title:
+          type: string
+        message:
+          type: string
+        isRead:
+          type: boolean
+        data:
+          type: object
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    NotificationResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        data:
+          $ref: "#/components/schemas/Notification"

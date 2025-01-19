@@ -1,0 +1,151 @@
+paths:
+  /api/v1/reports:
+    post:
+      summary: Generate a new financial report
+      tags:
+        - Reports
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - startDate
+                - endDate
+              properties:
+                startDate:
+                  type: string
+                  format: date-time
+                  description: Start date for the report period
+                endDate:
+                  type: string
+                  format: date-time
+                  description: End date for the report period
+      responses:
+        201:
+          description: Report generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportResponse"
+
+    get:
+      summary: Get all reports
+      tags:
+        - Reports
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date
+      responses:
+        200:
+          description: List of reports
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  results:
+                    type: number
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Report"
+
+  /api/v1/reports/{id}:
+    get:
+      summary: Get a specific report
+      tags:
+        - Reports
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Report retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportResponse"
+        404:
+          description: Report not found
+
+components:
+  schemas:
+    Report:
+      type: object
+      properties:
+        _id:
+          type: string
+        user:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        totalIncome:
+          type: number
+        totalExpense:
+          type: number
+        netBalance:
+          type: number
+        categoryBreakdown:
+          type: array
+          items:
+            type: object
+            properties:
+              category:
+                $ref: "#/components/schemas/Category"
+              amount:
+                type: number
+              percentage:
+                type: number
+        accountBreakdown:
+          type: array
+          items:
+            type: object
+            properties:
+              account:
+                $ref: "#/components/schemas/Account"
+              balance:
+                type: number
+              transactions:
+                type: number
+        generatedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ReportResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        data:
+          $ref: "#/components/schemas/Report"

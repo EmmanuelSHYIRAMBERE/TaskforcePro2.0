@@ -1,0 +1,221 @@
+paths:
+  /api/v1/categories:
+    post:
+      summary: Create a new category
+      tags:
+        - Categories
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - type
+              properties:
+                name:
+                  type: string
+                  description: Category name
+                description:
+                  type: string
+                  description: Category description
+                type:
+                  type: string
+                  enum: [EXPENSE, INCOME]
+                  description: Category type
+                parent:
+                  type: string
+                  description: Parent category ID (for subcategories)
+                color:
+                  type: string
+                  pattern: "^#[0-9A-Fa-f]{6}$"
+                  description: Hex color code
+                icon:
+                  type: string
+                  description: Icon identifier
+      responses:
+        201:
+          description: Category created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CategoryResponse"
+
+    get:
+      summary: Get all categories
+      tags:
+        - Categories
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [EXPENSE, INCOME]
+        - in: query
+          name: isActive
+          schema:
+            type: boolean
+      responses:
+        200:
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  results:
+                    type: number
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Category"
+
+  /api/v1/categories/hierarchy:
+    get:
+      summary: Get category hierarchy
+      tags:
+        - Categories
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Category hierarchy tree
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/CategoryTree"
+
+  /api/v1/categories/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Get a specific category
+      tags:
+        - Categories
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Category details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CategoryResponse"
+
+    patch:
+      summary: Update a category
+      tags:
+        - Categories
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                color:
+                  type: string
+                  pattern: "^#[0-9A-Fa-f]{6}$"
+                icon:
+                  type: string
+                isActive:
+                  type: boolean
+      responses:
+        200:
+          description: Category updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CategoryResponse"
+
+    delete:
+      summary: Delete a category
+      tags:
+        - Categories
+      security:
+        - BearerAuth: []
+      responses:
+        204:
+          description: Category deleted successfully
+
+components:
+  schemas:
+    Category:
+      type: object
+      properties:
+        _id:
+          type: string
+        user:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [EXPENSE, INCOME]
+        parent:
+          type: string
+        color:
+          type: string
+        icon:
+          type: string
+        isActive:
+          type: boolean
+        subcategories:
+          type: array
+          items:
+            $ref: "#/components/schemas/Category"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CategoryTree:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+        children:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryTree"
+
+    CategoryResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        data:
+          $ref: "#/components/schemas/Category"
