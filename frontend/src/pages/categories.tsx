@@ -2,6 +2,10 @@ import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { Category } from "@/types";
 
+interface Row {
+  getValue: (value: string) => string;
+}
+
 export const Categories = () => {
   // Replace with actual data fetching
   const categories: Category[] = [];
@@ -14,7 +18,7 @@ export const Categories = () => {
     {
       accessorKey: "budget",
       header: "Budget",
-      cell: ({ row }: { row: any }) => {
+      cell: ({ row }: { row: Row }) => {
         const budget = parseFloat(row.getValue("budget"));
         return budget
           ? new Intl.NumberFormat("en-US", {

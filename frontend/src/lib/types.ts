@@ -18,6 +18,7 @@ export interface Category {
   id: string;
   name: string;
   subcategories: SubCategory[];
+  type: TransactionType;
   createdAt: string;
   updatedAt: string;
 }

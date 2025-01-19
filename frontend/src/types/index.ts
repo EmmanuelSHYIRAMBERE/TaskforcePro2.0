@@ -14,6 +14,8 @@ export type Category = {
   name: string;
   type: "income" | "expense";
   subcategories: string[];
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type Account = {
