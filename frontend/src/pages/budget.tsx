@@ -1,15 +1,20 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle, ArrowUpCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { BudgetFormData } from "@/types/budget";
+import type { Budget as BudgetType } from "@/types/budget";
+import type { BudgetFormData } from "@/types/budget";
 import { BudgetOverview } from "@/components/budget-overview";
 import { BudgetList } from "@/components/budget-list";
 import useFetch from "@/hooks/use-fetch";
 import usePost from "@/hooks/use-post";
+import axios from "axios";
+import { useState } from "react";
 
 const Budget: React.FC = () => {
   const { toast } = useToast();
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Fetch budgets
   const {
@@ -18,6 +23,8 @@ const Budget: React.FC = () => {
     isLoading: isFetching,
   } = useFetch("/budgets");
 
+  const budgetsData = budgets?.data || [];
+
   // Create budget
   const {
     add: createBudget,
@@ -25,68 +32,104 @@ const Budget: React.FC = () => {
     error: createError,
   } = usePost("/budgets");
 
-  // Update budget
-  const {
-    add: updateBudget,
-    isAdding: isUpdating,
-    error: updateError,
-  } = usePost("/budgets");
+  useEffect(() => {
+    if (createError) {
+      toast({
+        title: "Error",
+        description: "Failed to create budget",
+        variant: "destructive",
+      });
+    }
+  }, [createError, toast]);
 
-  // Delete budget
-  const {
-    add: deleteBudget,
-    isAdding: isDeleting,
-    error: deleteError,
-  } = usePost("/budgets");
-
-  const handleCreateBudget = async (data: BudgetFormData) => {
+  const handleCreateBudget = async (formData: BudgetFormData) => {
     try {
-      await createBudget(data);
-      await refetchBudgets();
+      // Ensure all required fields are present
+      const budgetData = {
+        category: formData.category,
+        amount: Number(formData.amount),
+        period: formData.period,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        notifications: formData.notifications ?? false,
+      };
+
+      // Validate required fields
+      const requiredFields = [
+        "category",
+        "amount",
+        "period",
+        "startDate",
+        "endDate",
+      ];
+      const missingFields = requiredFields.filter(
+        (field) => !budgetData[field as keyof typeof budgetData]
+      );
+
+      if (missingFields.length > 0) {
+        throw new Error(`Missing required fields: ${missingFields.join(", ")}`);
+      }
+
+      await createBudget({
+        extraArgument: budgetData as Record<string, unknown>,
+      });
+
       toast({
         title: "Success",
         description: "Budget created successfully",
       });
     } catch (err) {
+      console.log("Error creating budget", err);
       toast({
         title: "Error",
-        description: createError?.message || "Failed to create budget",
+        description:
+          err instanceof Error ? err.message : "Failed to create budget",
         variant: "destructive",
       });
     }
   };
 
-  const handleUpdateBudget = async (id: string, data: Partial<Budget>) => {
+  const handleUpdateBudget = async (id: string, data: Partial<BudgetType>) => {
+    setIsUpdating(true);
     try {
-      await updateBudget({ ...data, id }, `/budgets/${id}`);
-      await refetchBudgets();
+      await axios.patch(`/api/v1/budgets/${id}`, data);
+
       toast({
         title: "Success",
         description: "Budget updated successfully",
       });
     } catch (err) {
+      console.log("Error updating budget", err);
       toast({
         title: "Error",
-        description: updateError?.message || "Failed to update budget",
+        description:
+          err instanceof Error ? err.message : "Failed to update budget",
         variant: "destructive",
       });
+    } finally {
+      setIsUpdating(false);
     }
   };
 
   const handleDeleteBudget = async (id: string) => {
+    setIsDeleting(true);
     try {
-      await deleteBudget({ id }, `/budgets/${id}`);
-      await refetchBudgets();
+      await axios.delete(`/api/v1/budgets/${id}`);
+
       toast({
         title: "Success",
         description: "Budget deleted successfully",
       });
     } catch (err) {
+      console.log("Error deleting budget", err);
       toast({
         title: "Error",
-        description: deleteError?.message || "Failed to delete budget",
+        description:
+          err instanceof Error ? err.message : "Failed to delete budget",
         variant: "destructive",
       });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -111,8 +154,11 @@ const Budget: React.FC = () => {
           <CardContent>
             <div className="text-2xl font-bold">
               $
-              {budgets
-                ?.reduce((sum, budget) => sum + budget.amount, 0)
+              {budgetsData
+                ?.reduce(
+                  (sum: number, budget: BudgetType) => sum + budget.amount,
+                  0
+                )
                 .toFixed(2) || "0.00"}
             </div>
           </CardContent>
@@ -126,8 +172,11 @@ const Budget: React.FC = () => {
           <CardContent>
             <div className="text-2xl font-bold">
               $
-              {budgets
-                ?.reduce((sum, budget) => sum + budget.spent, 0)
+              {budgetsData
+                ?.reduce(
+                  (sum: number, budget: BudgetType) => sum + budget.spent,
+                  0
+                )
                 .toFixed(2) || "0.00"}
             </div>
           </CardContent>
@@ -141,13 +190,13 @@ const Budget: React.FC = () => {
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{budgets?.length || 0}</div>
+            <div className="text-2xl font-bold">{budgetsData?.length || 0}</div>
           </CardContent>
         </Card>
       </div>
 
       <BudgetList
-        budgets={budgets || []}
+        budgets={budgetsData || []}
         isLoading={isFetching}
         onCreateBudget={handleCreateBudget}
         onUpdateBudget={handleUpdateBudget}
@@ -157,7 +206,7 @@ const Budget: React.FC = () => {
         isDeleting={isDeleting}
       />
 
-      {budgets && <BudgetOverview budgets={budgets} />}
+      {budgetsData && <BudgetOverview budgets={budgetsData} />}
     </div>
   );
 };

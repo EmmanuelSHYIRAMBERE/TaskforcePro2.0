@@ -17,12 +17,10 @@ import { useToast } from "@/hooks/use-toast";
 import usePost from "@/hooks/use-post";
 import TransferForm from "@/components/forms/transfer-form";
 import { DeleteAccountDialog } from "@/components/delete-account-dialog";
-
-const API_BASE_URL = "/api/v1";
+import useFetch from "@/hooks/use-fetch";
+import { SERVER_BASE_URL } from "@/constansts/constants";
 
 const Accounts = () => {
-  const [accounts, setAccounts] = useState<Account[] | null>(null);
-  const [loading, setLoading] = useState(true);
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [showTransfer, setShowTransfer] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
@@ -30,35 +28,24 @@ const Accounts = () => {
   const { toast } = useToast();
 
   const { add, isAdding } = usePost("/accounts");
-
-  const fetchAccounts = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get(`${API_BASE_URL}/accounts`);
-      setAccounts(response.data?.data || []);
-    } catch (error) {
-      console.log("Error fetching accounts", error);
-      toast({
-        title: "Error",
-        description: "Failed to load accounts",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: apiResponse, isLoading, error } = useFetch("/accounts");
 
   useEffect(() => {
-    fetchAccounts();
-  }, []);
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch accounts",
+        variant: "destructive",
+      });
+    }
+  }, [error, toast]);
+
+  // Extract accounts array from the API response
+  const accounts = apiResponse?.data || [];
 
   const handleAddAccount = async (data: Omit<Account, "_id">) => {
     try {
-      const response = await add(data);
-
-      console.log("Add account response", response);
-
-      await fetchAccounts();
+      await add(data);
       setShowAddAccount(false);
       toast({
         title: "Success",
@@ -78,8 +65,10 @@ const Accounts = () => {
     if (!editingAccount) return;
 
     try {
-      await axios.patch(`${API_BASE_URL}/accounts/${editingAccount._id}`, data);
-      await fetchAccounts();
+      await axios.patch(
+        `${SERVER_BASE_URL}/accounts/${editingAccount._id}`,
+        data
+      );
       setEditingAccount(null);
       toast({
         title: "Success",
@@ -97,8 +86,7 @@ const Accounts = () => {
 
   const handleDeleteAccount = async (accountId: string) => {
     try {
-      await axios.delete(`${API_BASE_URL}/accounts/${accountId}`);
-      await fetchAccounts();
+      await axios.delete(`${SERVER_BASE_URL}/accounts/${accountId}`);
       setDeletingAccount(null);
       toast({
         title: "Success",
@@ -121,8 +109,7 @@ const Accounts = () => {
     description?: string;
   }) => {
     try {
-      await axios.post(`${API_BASE_URL}/transfers`, data);
-      await fetchAccounts();
+      await axios.post(`${SERVER_BASE_URL}/transfers`, data);
       setShowTransfer(false);
       toast({
         title: "Success",
@@ -138,11 +125,11 @@ const Accounts = () => {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return <div>Loading accounts...</div>;
   }
 
-  if (!accounts) {
+  if (!accounts.length) {
     return <div>No accounts available.</div>;
   }
 
@@ -174,11 +161,12 @@ const Accounts = () => {
           <CardContent>
             <div className="text-2xl font-bold">
               $
-              {Array.isArray(accounts)
-                ? accounts
-                    .reduce((sum, acc) => sum + (acc.balance || 0), 0)
-                    .toLocaleString()
-                : "0"}
+              {accounts
+                .reduce(
+                  (sum: number, acc: Account) => sum + (acc.balance || 0),
+                  0
+                )
+                .toLocaleString()}
             </div>
           </CardContent>
         </Card>
@@ -190,9 +178,7 @@ const Accounts = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {Array.isArray(accounts)
-                ? accounts.filter((acc) => acc.isActive).length
-                : 0}
+              {accounts.filter((acc: Account) => acc.isActive).length}
             </div>
           </CardContent>
         </Card>
@@ -206,8 +192,8 @@ const Accounts = () => {
                 ? new Date(
                     Math.max(
                       ...accounts
-                        .filter((a) => a.updatedAt)
-                        .map((a) => new Date(a.updatedAt).getTime())
+                        .filter((a: Account) => a.updatedAt)
+                        .map((a: Account) => new Date(a.updatedAt).getTime())
                     )
                   ).toLocaleDateString()
                 : "N/A"}
@@ -230,7 +216,7 @@ const Accounts = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {accounts.map((account) => (
+              {accounts.map((account: Account) => (
                 <TableRow key={account._id}>
                   <TableCell className="font-medium">
                     {account.name || "N/A"}
@@ -299,7 +285,7 @@ const Accounts = () => {
         open={showTransfer}
         onClose={() => setShowTransfer(false)}
         onSubmit={handleTransfer}
-        accounts={accounts || []}
+        accounts={accounts}
       />
 
       <DeleteAccountDialog

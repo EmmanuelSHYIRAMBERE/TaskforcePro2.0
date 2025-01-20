@@ -17,11 +17,8 @@ export class AccountService {
     return Account.create(data);
   }
 
-  static async getAccounts(
-    userId: string,
-    filters: FilterQuery<IAccount> = {}
-  ) {
-    return Account.find({ user: userId, ...filters }).sort({ name: 1 });
+  static async getAccounts(userId: string) {
+    return Account.find({ user: userId }).sort({ name: 1 });
   }
 
   static async getAccountById(accountId: string, userId: string) {

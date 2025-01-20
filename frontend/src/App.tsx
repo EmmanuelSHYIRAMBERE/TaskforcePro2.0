@@ -5,13 +5,13 @@ import { MainLayout } from "./components/layout/main-layout";
 import { PrivateRoute } from "./components/auth/private-route";
 import Transactions from "./pages/transactions";
 import Reports from "./pages/report";
-import Budget from "./pages/budget";
 import { SignIn } from "./components/auth/sign-in";
 import { SignUp } from "./components/auth/sign-up";
-import { Categories } from "./pages/categories";
 import { Settings } from "./pages/settings";
 import Dashboard from "./pages/dashboard";
 import Accounts from "./pages/accounts";
+import Budget from "./pages/Budget";
+import Categories from "./pages/categories";
 
 function App() {
   return (

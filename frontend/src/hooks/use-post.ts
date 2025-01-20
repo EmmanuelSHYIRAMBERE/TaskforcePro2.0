@@ -23,7 +23,7 @@ const addData = async (
 };
 
 // Custom hook for adding data
-const useAdd = (path: string) => {
+const usePost = (path: string) => {
   const url = `${SERVER_BASE_URL}${path}`;
   const { trigger, isMutating, data, error } = useSWRMutation(url, addData);
 
@@ -35,4 +35,4 @@ const useAdd = (path: string) => {
   };
 };
 
-export default useAdd;
+export default usePost;

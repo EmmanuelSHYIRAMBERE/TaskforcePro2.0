@@ -20,8 +20,7 @@ export class AccountController {
   getAccounts = catchAsyncError(
     async (req: Request, res: Response, next: NextFunction) => {
       const accounts = await AccountService.getAccounts(
-        req.user!._id.toString(),
-        req.query
+        req.user!._id.toString()
       );
 
       res.status(200).json({
