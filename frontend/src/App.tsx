@@ -10,8 +10,8 @@ import { SignUp } from "./components/auth/sign-up";
 import { Settings } from "./pages/settings";
 import Dashboard from "./pages/dashboard";
 import Accounts from "./pages/accounts";
-import Budget from "./pages/Budget";
 import Categories from "./pages/categories";
+import Budget from "./pages/Budget";
 
 function App() {
   return (
