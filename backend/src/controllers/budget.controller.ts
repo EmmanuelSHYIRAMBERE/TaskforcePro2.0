@@ -5,8 +5,10 @@ import { catchAsyncError } from "../utils/errorhandler.utils";
 export class BudgetController {
   createBudget = catchAsyncError(
     async (req: Request, res: Response, next: NextFunction) => {
+      console.log("req.body", req.body);
+
       const budget = await BudgetService.createBudget({
-        ...req.body,
+        ...req.body.extraArgument,
         user: req.user!._id,
       });
 

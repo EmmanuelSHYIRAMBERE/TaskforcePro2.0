@@ -1,6 +1,5 @@
+import { Transaction } from "@/types/transaction";
 import { ArrowUpCircle, ArrowDownCircle } from "lucide-react";
-
-import { Transaction } from "@/types";
 
 export const RecentTransactions = ({
   transactions,
@@ -11,7 +10,7 @@ export const RecentTransactions = ({
     <div className="space-y-4">
       {transactions.map((transaction) => (
         <div
-          key={transaction.id}
+          key={transaction._id}
           className="flex items-center justify-between p-2 hover:bg-muted rounded-lg"
         >
           <div className="flex items-center space-x-4">

@@ -16,6 +16,8 @@ interface ReportChartProps {
 }
 
 export const ReportChart: React.FC<ReportChartProps> = ({ data }) => {
+  console.log("data", data);
+
   return (
     <Card className="p-6">
       <CardHeader>

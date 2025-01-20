@@ -4,6 +4,21 @@ import { NotificationService } from "./notification.service";
 
 export class BudgetService {
   static async createBudget(data: Partial<IBudget>): Promise<IBudget> {
+    // Validate required fields
+    const requiredFields = [
+      "user",
+      "category",
+      "amount",
+      "period",
+      "startDate",
+      "endDate",
+    ];
+    requiredFields.forEach((field) => {
+      if (!data[field as keyof Partial<IBudget>]) {
+        throw new Error(`Missing required field: ${field}`);
+      }
+    });
+
     // Validate date ranges
     if (data.startDate && data.endDate && data.startDate > data.endDate) {
       throw new Error("Start date cannot be after end date");

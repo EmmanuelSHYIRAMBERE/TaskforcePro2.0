@@ -1,4 +1,4 @@
-import { Transaction } from "@/types";
+import { Transaction } from "@/types/transaction";
 import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
 
 interface SpendingByCategoryProps {
@@ -12,7 +12,7 @@ export const SpendingByCategory = ({
   const categoryTotals = transactions
     .filter((t: Transaction) => t.type === "EXPENSE")
     .reduce((acc, curr) => {
-      acc[curr.category] = (acc[curr.category] || 0) + curr.amount;
+      acc[curr._id] = (acc[curr._id] || 0) + curr.amount;
       return acc;
     }, {} as Record<string, number>);
 

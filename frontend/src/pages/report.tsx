@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BadgeDollarSign, TrendingUp, PieChart } from "lucide-react";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
@@ -7,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ReportChart } from "@/components/report-chart";
 import { SummaryCard } from "@/components/summary-card";
 import { ReportDetailsDialog } from "@/components/report-details-dialog";
+import useFetch from "@/hooks/use-fetch";
 
 interface DateRange {
   from: Date;
@@ -14,7 +16,6 @@ interface DateRange {
 }
 
 const Reports: React.FC = () => {
-  const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentRange, setCurrentRange] = useState<DateRange>({
     from: new Date(),
@@ -22,23 +23,19 @@ const Reports: React.FC = () => {
   });
   const { toast } = useToast();
 
-  const fetchReports = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch("/api/v1/reports");
-      const data = await response.json();
-      setReports(data.data);
-    } catch (error) {
-      console.error("Error fetching reports", error);
-      toast({
-        title: "Error fetching reports",
-        description: "Please try again later",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    data: reportsData,
+    error: reportsError,
+    isLoading: reportsLoading,
+  } = useFetch("/reports");
+
+  // Memoize processed data
+  const reports = useMemo(
+    () => (reportsData?.data || []) as Report[],
+    [reportsData]
+  );
+
+  const latestReport = reports[0];
 
   const handleGenerateReport = async (dateRange: DateRange) => {
     try {
@@ -57,7 +54,6 @@ const Reports: React.FC = () => {
       const data = await response.json();
 
       if (data.status === "success") {
-        await fetchReports();
         toast({
           title: "Report generated successfully",
           variant: "default",
@@ -82,17 +78,17 @@ const Reports: React.FC = () => {
     handleGenerateReport(range);
   };
 
-  useEffect(() => {
-    fetchReports();
-  }, []);
-
-  const latestReport = reports[0];
-
-  if (loading) {
+  if (loading || reportsLoading) {
     return (
-      <div className="container mx-auto p-6">
-        <p>Loading...</p>
-      </div>
+      <div className="flex items-center justify-center h-96">Loading...</div>
+    );
+  }
+
+  if (reportsError) {
+    return (
+      <Alert variant="destructive">
+        <AlertDescription>{reportsError}</AlertDescription>
+      </Alert>
     );
   }
 
@@ -136,7 +132,7 @@ const Reports: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {reports.map((report) => (
+            {reports.map((report: Report) => (
               <ReportDetailsDialog key={report._id} report={report} />
             ))}
           </div>
