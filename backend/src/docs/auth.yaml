@@ -16,6 +16,54 @@ components:
         email: "email@me.com"
         password: "SecurePass123!"
 
+    changePasswordRequest:
+      type: object
+      required:
+        - existingPassword
+        - newPassword
+      properties:
+        existingPassword:
+          type: string
+          description: The current password of the user
+        newPassword:
+          type: string
+          description: The new password of the user
+      example:
+        existingPassword: "SecurePass123!"
+        newPassword: "NewSecurePass123!"
+
+    forgotPasswordRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          description: The email of the user
+      example:
+        email: "email@me.com"
+
+    resetPasswordRequest:
+      type: object
+      required:
+        - email
+        - otp
+        - newPassword
+      properties:
+        email:
+          type: string
+          description: The email of the user
+        otp:
+          type: string
+          description: The otp sent to the user email
+        newPassword:
+          type: string
+          description: The new password of the user
+      example:
+        email: "email@me.com"
+        otp: "123456"
+        newPassword: "NewSecurePass123!"
+
 tags:
   - name: authentication
     description: Authentication operations
@@ -31,14 +79,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/loginRequest"
+              $ref: "#/components/schemas/login"
       responses:
         "200":
           description: Login successful
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/loginResponse"
+                $ref: "#/components/schemas/login"
         "400":
           description: Bad request, missing email or password
         "401":

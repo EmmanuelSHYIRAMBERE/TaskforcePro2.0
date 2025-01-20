@@ -71,8 +71,6 @@ function configureApp(): express.Application {
   };
   const specs = swaggerJSDoc(options);
 
-  console.log("specs", specs);
-
   // serve and swagger documentation
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
   app.use("/api/v1", mainRouter);
