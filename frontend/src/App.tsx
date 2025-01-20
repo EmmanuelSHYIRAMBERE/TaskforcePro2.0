@@ -11,7 +11,7 @@ import { Settings } from "./pages/settings";
 import Dashboard from "./pages/dashboard";
 import Accounts from "./pages/accounts";
 import Categories from "./pages/categories";
-import Budget from "./pages/Budget";
+import Budget from "./pages/budget";
 
 function App() {
   return (
