@@ -6,36 +6,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-import { RefreshCw } from "lucide-react";
 import { Transaction } from "@/types/transaction";
 
 interface TransactionTableProps {
   transactions: Transaction[];
   isLoading: boolean;
-  onRefresh: () => void;
 }
 
 export const TransactionTable: React.FC<TransactionTableProps> = ({
   transactions,
   isLoading,
-  onRefresh,
 }) => {
   return (
     <div>
-      <div className="flex justify-end mb-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onRefresh}
-          disabled={isLoading}
-        >
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Refresh
-        </Button>
-      </div>
-
       <div className="rounded-md border">
         <Table>
           <TableHeader>

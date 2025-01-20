@@ -8,7 +8,6 @@ import {
   PieChart,
   FileText,
   Settings,
-  HelpCircle,
 } from "lucide-react";
 
 export const navigation = [
@@ -53,12 +52,6 @@ export const navigation = [
     href: "/settings",
     icon: Settings,
     description: "Manage preferences",
-  },
-  {
-    name: "Help",
-    href: "/help",
-    icon: HelpCircle,
-    description: "Get support",
   },
 ];
 

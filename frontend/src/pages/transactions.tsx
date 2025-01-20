@@ -15,88 +15,75 @@ import { TransactionForm } from "@/components/forms/transaction-form";
 import { TransactionTable } from "@/components/transaction-table";
 import { TransactionChart } from "@/components/transaction-chart";
 import { TransactionFiltersComponent } from "@/components/transaction-filters";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+
+import useFetch from "@/hooks/use-fetch";
+import usePost from "@/hooks/use-post";
 import { Account } from "@/types";
-import { Category } from "@/lib/types";
 
 const Transactions: React.FC = () => {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState<TransactionFilters>({});
   const { toast } = useToast();
 
-  const fetchAccounts = async () => {
-    try {
-      const response = await fetch("/api/v1/accounts");
+  const {
+    data: accountsData,
+    error: accountsError,
+    isLoading: accountsLoading,
+  } = useFetch("/accounts");
 
-      const data = await response.json();
-      setAccounts(data.data);
-    } catch (error) {
-      console.log("error", error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch accounts",
-        variant: "destructive",
-      });
-    }
-  };
+  const {
+    data: categoriesData,
+    error: categoriesError,
+    isLoading: categoriesLoading,
+  } = useFetch(`/categories`);
 
-  const fetchCategories = async () => {
-    try {
-      const response = await fetch("/api/v1/categories");
-      const data = await response.json();
-      setCategories(data.data);
-    } catch (error) {
-      console.log("error", error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch categories",
-        variant: "destructive",
-      });
-    }
-  };
+  const {
+    data: transactionsData,
+    error: transactionsError,
+    isLoading: transactionsLoading,
+  } = useFetch(`/transactions`);
 
-  const fetchTransactions = async () => {
-    try {
-      setIsLoading(true);
-      const queryParams = new URLSearchParams();
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value) queryParams.append(key, value);
-      });
-
-      const response = await fetch(`/api/v1/transactions?${queryParams}`);
-      const data = await response.json();
-      setTransactions(data.data);
-    } catch (error) {
-      console.log("error", error);
+  useEffect(() => {
+    if (transactionsError) {
       toast({
         title: "Error",
         description: "Failed to fetch transactions",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
-  };
+  }, [transactionsError, toast]);
+
+  const accounts = accountsData?.data || [];
+  const categories = categoriesData?.data || [];
+  const transactions = transactionsData?.data || [];
+
+  const {
+    add,
+    isAdding: transactionsAdding,
+    error: transactionsAddError,
+  } = usePost("/transactions");
 
   const handleAddTransaction = async (data: Partial<Transaction>) => {
-    try {
-      const response = await fetch("/api/v1/transactions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (response.ok) {
+    if (data.type === "EXPENSE" && data.amount && data.account) {
+      const selectedAccount = accounts.find(
+        (a: Account) => a.id === data.account?.id
+      );
+      if (selectedAccount && data.amount > selectedAccount.balance) {
         toast({
-          title: "Success",
-          description: "Transaction added successfully",
+          title: "Insufficient Funds",
+          description: `The entered amount exceeds the available balance in the selected account (${selectedAccount.balance} ${selectedAccount.currency}).`,
+          variant: "destructive",
         });
-        fetchTransactions();
+        return;
       }
+    }
+
+    try {
+      await add(data);
+      toast({
+        title: "Success",
+        description: "Transaction added successfully",
+      });
     } catch (error) {
       console.log("error", error);
       toast({
@@ -107,18 +94,30 @@ const Transactions: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    // Fetch initial data
-    fetchAccounts();
-    fetchCategories();
-  }, []);
+  const isLoading =
+    accountsLoading ||
+    transactionsLoading ||
+    categoriesLoading ||
+    transactionsAdding;
+  const error =
+    accountsError ||
+    transactionsError ||
+    categoriesError ||
+    transactionsAddError;
 
-  useEffect(() => {
-    fetchTransactions();
-  }, [filters]);
+  if (isLoading)
+    return (
+      <div className="flex items-center justify-center h-96">Loading...</div>
+    );
 
   return (
     <div className="container mx-auto py-6 space-y-6">
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Transactions</h1>
         <Dialog>
@@ -169,11 +168,7 @@ const Transactions: React.FC = () => {
           <CardTitle>Transaction List</CardTitle>
         </CardHeader>
         <CardContent>
-          <TransactionTable
-            transactions={transactions}
-            isLoading={isLoading}
-            onRefresh={fetchTransactions}
-          />
+          <TransactionTable transactions={transactions} isLoading={isLoading} />
         </CardContent>
       </Card>
     </div>

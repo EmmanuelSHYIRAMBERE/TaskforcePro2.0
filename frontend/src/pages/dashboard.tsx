@@ -59,14 +59,11 @@ const Dashboard = () => {
     add: fetchReport,
     isAdding: reportLoading,
     error: reportError,
-    // data: reportData,
   } = usePost("/reports");
 
-  const accounts: Account[] = Array.isArray(accountsData) ? accountsData : [];
-  const transactions: Transaction[] = Array.isArray(transactionsData)
-    ? transactionsData
-    : [];
-  const budgets: Budget[] = Array.isArray(budgetsData) ? budgetsData : [];
+  const accounts = accountsData?.data || [];
+  const transactions = transactionsData?.data || [];
+  const budgets = budgetsData?.data || [];
 
   useEffect(() => {
     const getReport = async () => {

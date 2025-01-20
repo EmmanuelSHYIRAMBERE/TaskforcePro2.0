@@ -4,6 +4,7 @@ import { catchAsyncError } from "../utils/errorhandler.utils";
 export class TransactionController {
   createTransaction = catchAsyncError(
     async (req: Request, res: Response, next: NextFunction) => {
+      console.log("Body received", req.body);
       const transaction = await TransactionService.createTransaction({
         ...req.body,
         user: req.user!._id,
