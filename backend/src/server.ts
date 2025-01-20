@@ -31,11 +31,6 @@ var corsOptions = {
   optionsSuccessStatus: 200, // For legacy browser support
 };
 
-console.log("Resolved paths:", {
-  docs: path.join(__dirname, "src/docs/*.yaml"),
-  routes: path.join(__dirname, "src/routes/*.js"),
-});
-
 const swaggerLetterHead = yaml.load(
   fs.readFileSync(path.join(__dirname, "config", "swagger.yaml"), "utf-8")
 ) as { info: any };
@@ -72,13 +67,16 @@ function configureApp(): express.Application {
         },
       ],
     },
-    apis: ["./docs/*.js", "./docs/*.yaml", "./routes/*.js"],
+    apis: ["./src/docs/*.js", "./src/docs/*.yaml", "./src/routes/*.js"],
   };
-  const swaggerDocument = swaggerJSDoc(options);
+  const specs = swaggerJSDoc(options);
+
+  console.log("specs", specs);
 
   // serve and swagger documentation
-  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
   app.use("/api/v1", mainRouter);
+
   // Welcome route
   app.get("/", (req, res) => {
     res.status(200).send("Welcome to Personal Wallet Management System");
