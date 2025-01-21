@@ -29,6 +29,8 @@ const Accounts = () => {
 
   const { add, isAdding } = usePost("/accounts");
   const { data: apiResponse, isLoading, error } = useFetch("/accounts");
+  const { add: handleTransferAmounts, isAdding: isTransferring } =
+    usePost("/accounts/transfer");
 
   useEffect(() => {
     if (error) {
@@ -103,13 +105,15 @@ const Accounts = () => {
   };
 
   const handleTransfer = async (data: {
-    fromAccount: string;
-    toAccount: string;
+    fromAccountId: string;
+    toAccountId: string;
+    categoryId: string;
+    subcategoryId?: string;
     amount: number;
     description?: string;
   }) => {
     try {
-      await axios.post(`${SERVER_BASE_URL}/transfers`, data);
+      await handleTransferAmounts(data);
       setShowTransfer(false);
       toast({
         title: "Success",
@@ -286,6 +290,7 @@ const Accounts = () => {
         onClose={() => setShowTransfer(false)}
         onSubmit={handleTransfer}
         accounts={accounts}
+        isLoading={isTransferring}
       />
 
       <DeleteAccountDialog

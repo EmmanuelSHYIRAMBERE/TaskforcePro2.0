@@ -87,4 +87,33 @@ export class AccountController {
       });
     }
   );
+
+  transferBetweenAccounts = catchAsyncError(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const { fromAccountId, toAccountId, categoryId, amount, description } =
+        req.body;
+
+      if (!fromAccountId || !toAccountId || !categoryId || !amount) {
+        res.status(400).json({
+          status: "fail",
+          message: "Missing required fields",
+        });
+        return;
+      }
+
+      const result = await AccountService.transferBetweenAccounts(
+        req.user!._id.toString(),
+        fromAccountId,
+        toAccountId,
+        categoryId,
+        amount,
+        description
+      );
+
+      res.status(200).json({
+        status: "success",
+        data: result,
+      });
+    }
+  );
 }

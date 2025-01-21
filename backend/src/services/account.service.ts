@@ -1,4 +1,4 @@
-import { FilterQuery } from "mongoose";
+import mongoose, { FilterQuery } from "mongoose";
 import { Account, IAccount } from "../models/account.model";
 import { Transaction } from "../models/transaction.model";
 
@@ -28,7 +28,7 @@ export class AccountService {
     });
 
     if (!account) {
-      throw new Error("Account not found");
+      throw new Error(`Account with ID ${accountId} not found`);
     }
 
     return account;
@@ -127,6 +127,73 @@ export class AccountService {
       transactions: {
         totalIncome: transactions.length ? transactions[0].totalIncome : 0,
         totalExpenses: transactions.length ? transactions[0].totalExpenses : 0,
+      },
+    };
+  }
+
+  static async transferBetweenAccounts(
+    userId: string,
+    fromAccountId: string,
+    toAccountId: string,
+    categoryId: string,
+    amount: number,
+    description?: string
+  ) {
+    // Validate accounts
+    const fromAccount = await this.getAccountById(fromAccountId, userId);
+    const toAccount = await this.getAccountById(toAccountId, userId);
+
+    if (!fromAccount.isActive || !toAccount.isActive) {
+      throw new Error("One or both accounts are inactive");
+    }
+
+    if (fromAccount.balance < amount) {
+      throw new Error("Insufficient funds in source account");
+    }
+
+    try {
+      // Deduct from source account
+      fromAccount.balance -= amount;
+      await fromAccount.save();
+
+      // Add to destination account
+      toAccount.balance += amount;
+      await toAccount.save();
+
+      // Log transactions
+      await Transaction.create([
+        {
+          user: userId,
+          account: fromAccountId,
+          category: categoryId,
+          type: "EXPENSE",
+          amount,
+          description: description || "Transfer to " + toAccount.name,
+          date: new Date(),
+        },
+        {
+          user: userId,
+          account: toAccountId,
+          category: categoryId,
+          type: "INCOME",
+          amount,
+          description: description || "Transfer from " + fromAccount.name,
+          date: new Date(),
+        },
+      ]);
+    } catch (error) {
+      console.log("Error transferring funds", error);
+      throw new Error("An error occurred during the transfer: ");
+    }
+
+    return {
+      fromAccount: {
+        id: fromAccountId,
+        balance: fromAccount.balance,
+      },
+      toAccount: {
+        id: toAccountId,
+        balance: toAccount.balance,
       },
     };
   }

@@ -19,5 +19,6 @@ accountRouter
   .delete(accountController.deleteAccount);
 
 accountRouter.get("/:id/balance", accountController.getAccountBalance);
+accountRouter.post("/transfer", accountController.transferBetweenAccounts);
 
 export default accountRouter;

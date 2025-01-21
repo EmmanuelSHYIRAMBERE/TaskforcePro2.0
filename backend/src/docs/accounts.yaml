@@ -179,6 +179,64 @@ paths:
                           totalExpenses:
                             type: number
 
+  /api/v1/accounts/transfer:
+    post:
+      summary: Transfer funds between accounts
+      tags:
+        - Accounts
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fromAccountId
+                - toAccountId
+                - amount
+              properties:
+                fromAccountId:
+                  type: string
+                  description: ID of the source account
+                toAccountId:
+                  type: string
+                  description: ID of the destination account
+                amount:
+                  type: number
+                  description: Amount to transfer
+                description:
+                  type: string
+                  description: Optional transfer description
+      responses:
+        200:
+          description: Transfer successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      fromAccount:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          balance:
+                            type: number
+                      toAccount:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          balance:
+                            type: number
+
 components:
   schemas:
     Account:
