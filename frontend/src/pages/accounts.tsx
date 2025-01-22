@@ -133,10 +133,6 @@ const Accounts = () => {
     return <div>Loading accounts...</div>;
   }
 
-  if (!accounts.length) {
-    return <div>No accounts available.</div>;
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -165,7 +161,7 @@ const Accounts = () => {
           <CardContent>
             <div className="text-2xl font-bold">
               $
-              {accounts
+              {accounts && accounts
                 .reduce(
                   (sum: number, acc: Account) => sum + (acc.balance || 0),
                   0
